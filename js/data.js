@@ -33,18 +33,27 @@ window.WEDDING = {
   /* theme: which painted scene the event gets */
   sharedEvents: [
     {
-      theme: "haldi", title: "Haldi", amp: "& Reception", date: "Friday, 22 January 2027", venue: "resort",
-      sessions: [{ label: "Haldi", time: "12:00 PM" }, { label: "Reception", time: "9:00 PM" }],
+      theme: "haldi", title: "Haldi", date: "Friday, 22 January 2027", venue: "resort",
+      sessions: [{ label: "Haldi", time: "12:00 PM" }],
       blurb: "Request your presence for a day of vibrant celebrations—from golden morning hues of Haldi to an evening of music, dinner, and joy.",
       cal: { title: "Haldi & Reception", start: "20270122T120000", end: "20270122T235900", details: "Haldi 12:00 PM · Reception 9:00 PM" }
     },
     {
-      theme: "wedding", title: "Wedding", pre: "Baraat &", date: "Saturday, 23 January 2027", venue: "resort",
-      sessions: [
-        { label: "Baraat", time: "11:00 AM", note: "The royal procession arrives" },
-        { label: "Wedding", time: "2:00 PM", note: "Sacred matrimony · Shubh Lagn" }
-      ],
+      theme: "reception", title: "Reception", date: "Friday, 22 January 2027", venue: "resort",
+      sessions: [{ label: "Reception", time: "9:00 PM" }],
+      blurb: "An evening of music, dinner, and joy.",
+      cal: { title: "Haldi & Reception", start: "20270122T120000", end: "20270122T235900", details: "Haldi 12:00 PM · Reception 9:00 PM" }
+    },
+    {
+      theme: "baraat", title: "Baraat", date: "Saturday, 23 January 2027", venue: "resort",
+      sessions: [{ label: "Baraat", time: "11:00 AM", note: "The royal procession arrives" }],
       blurb: "Request your gracious presence as we dance in celebration with the royal Baraat and witness the couple unite in sacred matrimony.",
+      cal: { title: "Baraat & Wedding", start: "20270123T110000", end: "20270123T200000", details: "Baraat 11:00 AM · Wedding 2:00 PM" }
+    },
+    {
+      theme: "wedding", title: "Wedding", date: "Saturday, 23 January 2027", venue: "resort",
+      sessions: [{ label: "Wedding", time: "2:00 PM", note: "Sacred matrimony · Shubh Lagn" }],
+      blurb: "",
       cal: { title: "Baraat & Wedding", start: "20270123T110000", end: "20270123T200000", details: "Baraat 11:00 AM · Wedding 2:00 PM" }
     }
   ],
