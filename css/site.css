@@ -101,15 +101,25 @@ p{margin:0}
 .btn--ghost:hover{background:#fffaf2}
 
 /* ---------- Peacock feather transition ---------- */
-.peacock{--p:0;position:relative;height:130svh;overflow:hidden;background:linear-gradient(#cfe0ee,#eef1ec 55%,var(--ivory))}
-.peacock__l,.peacock__r{position:absolute;inset:0;transition:transform .1s linear}
-.peacock__l{transform:translateX(calc(var(--p) * -95% + 10%))}
-.peacock__r{transform:scaleX(-1) translateX(calc(var(--p) * -95% + 10%))}
-.feather{position:absolute;width:min(46vw,290px);height:auto;transform:rotate(var(--r));filter:drop-shadow(0 6px 8px rgba(30,40,20,.18))}
-.feather.f0{left:-6%;top:2%}.feather.f1{left:8%;top:20%}.feather.f2{left:-4%;top:40%}.feather.f3{left:14%;top:52%}
-.feather.f4{left:2%;top:66%}.feather.f5{left:22%;top:-6%}.feather.f6{left:24%;top:34%}
-.peacock__txt{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:6px;opacity:calc(var(--p) * 2.4 - .7)}
+.peacock{--p:0;position:relative;height:230svh;background:#fffaf2}
+.peacock__stick{position:sticky;top:0;height:100svh;overflow:hidden;display:grid;place-items:center}
+.peacock__img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%;transform-origin:50% 46%;transform:scale(calc(1 + var(--p) * var(--p) * 7));opacity:calc(1.35 - var(--p) * 1.1);will-change:transform}
+.peacock__txt{position:relative;z-index:2;display:grid;text-align:center;gap:6px;opacity:calc(var(--p) * 2.2 - .35);transform:scale(calc(.85 + var(--p) * .15))}
 .peacock__txt .script{font-size:clamp(48px,13vw,86px)}
+
+/* ---------- Painted scenes ---------- */
+.win--paint{display:flex;flex-direction:column}
+.win--paint .sky{background:radial-gradient(90% 45% at 50% 18%,rgba(255,255,255,.55),transparent 70%),var(--skyc)}
+.scene .win--paint .content{flex:1 0 auto;padding-bottom:0}
+.paint{position:relative;z-index:1;display:block;width:100%;height:auto;margin-top:calc(-175cqw * var(--ov));-webkit-mask:linear-gradient(transparent 0,#000 calc(175cqw * var(--ov) * .75));mask:linear-gradient(transparent 0,#000 calc(175cqw * var(--ov) * .75));pointer-events:none}
+.win--paint .content :is(p,.script,h1,h2){text-shadow:0 0 14px var(--skyc),0 0 6px var(--skyc),0 0 2px var(--skyc)}
+.win--paint .content .btn{text-shadow:none}
+.lights-top{position:absolute;top:0;left:0;right:0;height:34%;z-index:2;pointer-events:none}
+.lights-top svg{width:100%;height:100%}
+.tw{animation:tw 2.4s ease-in-out var(--d) infinite alternate}
+@keyframes tw{from{opacity:.35}to{opacity:1}}
+.scene--reception .script,.scene--reception .ev-date{color:#6b4a3a}
+.scene--baraat .script,.scene--baraat .ev-date{color:#8a2346}
 
 /* ---------- Events ---------- */
 .events-head{text-align:center;padding:40px 20px 6px;display:grid;justify-items:center;gap:10px}
@@ -122,7 +132,7 @@ p{margin:0}
 .scene--mehndi .script,.scene--mehndi .ev-date{color:#3f6a2a}
 .scene--wedding .script,.scene--wedding .ev-date{color:#7d2a5a}
 [class*="scene--"] .content{}
-.scene--bairana .content,.scene--haldi .content,.scene--wedding .content,.scene--mehndi .content{padding-top:30cqw;padding-bottom:66cqw}
+.scene--bairana .content,.scene--haldi .content,.scene--wedding .content,.scene--mehndi .content,.scene--reception .content,.scene--baraat .content{padding-top:30cqw}
 .ev-title{font-size:clamp(56px,17cqw,96px);text-shadow:0 2px 0 rgba(255,255,255,.5)}
 .ev-title .pre,.ev-title .post{display:block;font-size:.42em;line-height:1.3}
 .blurb{font-style:italic;max-width:32ch;font-size:clamp(17px,4.4cqw,20px)}
