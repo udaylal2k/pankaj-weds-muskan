@@ -25,7 +25,7 @@
   const Lx = (cls, h, tag = "div") => `<${tag} class="ln ${cls}" style="--i:${n++}">${h}</${tag}>`;
 
   /* Each painting's own top colour, so the text sits on clean sky */
-  const SKY = { invite: "#f8ecd5", court: "#faf1de", bairana: "#fcb48f", mehndi: "#fcfaed", haldi: "#fdda7f", reception: "#f6e6cf", baraat: "#fcb28c", wedding: "#fab894", closing: "#fcb48d" };
+  const SKY = { savedate: "#fddaad", invite: "#fcad84", court: "#fddaab", bairana: "#fcb48f", mehndi: "#fdd779", haldi: "#fdda7f", reception: "#fdb27b", baraat: "#fcb28c", wedding: "#fab894", closing: "#fcb48d" };
   const frame = (id, theme, inner, o = {}) => `
   <section class="frame frame--${theme}${o.img ? "" : " frame--plain"}" id="${id}" data-petals="${o.petals || ""}" data-burst="${o.burst || ""}">
     <div class="card">
@@ -73,7 +73,7 @@
     L("lead", W.hero.tagline) +
     L("script closing", W.hero.closing) +
     Lx("btns", `<a class="btn" href="#events">View schedule</a><a class="btn btn--ghost" href="#travel">Travel info</a>`),
-    { deco: lotus, after: `<img class="feathers" src="scenes/feathers.webp" alt="" aria-hidden="true" width="768" height="1344">` });
+    { img: "savedate", after: `<img class="feathers" src="scenes/feathers.webp" alt="" aria-hidden="true" width="768" height="1344">` });
 
   /* 4. One frame per event */
   const events = [...S.firstEvents, ...W.sharedEvents];
@@ -316,7 +316,9 @@
     else if (t === "wedding") { burst("pink", 90); setTimeout(() => burst("pink", 50), 400); }
     else if (t === "end") burst("pink", 40);
   }
+  const marigoldImg = new Image(); marigoldImg.src = "scenes/marigold.png";
   function drawBloom(p) {
+    if (marigoldImg.complete && marigoldImg.naturalWidth) { ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); const d = p.s * 2.1; ctx.drawImage(marigoldImg, -d / 2, -d / 2, d, d); ctx.restore(); return; }
     ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
     const rings = [["#e9761a", 1, 14], ["#f6a02c", 0.74, 12], ["#ffc04a", 0.48, 10]];
     rings.forEach(([c, k, n]) => { ctx.fillStyle = c; for (let j = 0; j < n; j++) { ctx.save(); ctx.rotate((j / n) * Math.PI * 2 + k); ctx.beginPath(); ctx.ellipse(0, -p.s * k * 0.55, p.s * 0.16 * k + 3, p.s * k * 0.42, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } });
