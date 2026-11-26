@@ -8,42 +8,62 @@
 <meta name="theme-color" content="#f5eee2">
 <meta property="og:title" content="Pankaj & Muskan — Wedding">
 <meta property="og:description" content="Together with their families, joyfully invite you to the wedding celebrations · 21–23 January 2027 · Bhopal">
-<meta property="og:image" content="gallery/roka.webp">
+<meta property="og:image" content="scenes/invite.webp">
 <link rel="icon" id="fav" href="favicon-groom.svg">
+<link rel="preload" as="image" href="scenes/invite.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Great+Vibes&family=Pinyon+Script&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/site.css?v=2">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Pinyon+Script&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/site.css?v=4">
 </head>
 <body class="locked">
 
-<!-- Opening: flower-string curtain -->
-<div id="gate" class="gate" role="dialog" aria-label="Open the invitation">
-  <div class="ladis ladis--l" aria-hidden="true"></div>
-  <div class="ladis ladis--r" aria-hidden="true"></div>
+<div id="gate" class="gate">
   <button class="gate__card" id="gateBtn" type="button">
-    <span class="kicker">You are invited</span>
+    <span class="gate__kicker">You are invited</span>
     <img class="gate__mono" src="brand/monogram-v2.png" alt="" width="813" height="729">
-    <span class="gate__names"><span data-first>Pankaj</span> <i>&amp;</i> <span data-second>Muskan</span></span>
-    <span class="gate__hint">Tap to open the invitation</span>
+    <span class="gate__names"><span data-first>Pankaj</span><i>&amp;</i><span data-second>Muskan</span></span>
+    <span class="gate__hint">Tap to open</span>
   </button>
 </div>
 
-<nav class="nav" id="nav" aria-label="Sections">
-  <a href="#events">Events</a><a href="#family">Family</a><a href="#story">Story</a><a href="#gallery">Gallery</a><a href="#travel">Travel</a><a href="#faq">FAQ</a><a href="#blessings">Blessings</a>
-</nav>
-
 <canvas id="petals" aria-hidden="true"></canvas>
+<div class="progress" id="progress" aria-hidden="true"></div>
 
 <main id="main"></main>
 
 <div class="dock">
+  <button class="dock__btn" id="menuBtn" type="button" aria-label="Sections" aria-expanded="false" aria-controls="menu">
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </button>
   <a class="dock__btn" id="waShare" href="#" target="_blank" rel="noopener" aria-label="Share on WhatsApp">
     <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.5-.3Z"/></svg>
   </a>
   <button class="dock__btn" id="music" type="button" aria-label="Mute music" aria-pressed="true">
     <span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
   </button>
+</div>
+
+<nav class="menu" id="menu" hidden aria-label="Sections">
+  <div class="menu__panel">
+    <a href="#top">Invitation</a><a href="#events">Celebrations</a><a href="#family">Family</a><a href="#story">Our story</a>
+    <a href="#gallery">Moments</a><a href="#travel">Travel</a><a href="#faq">FAQ</a><a href="#blessings">Blessings</a>
+  </div>
+</nav>
+
+<div class="sheet" id="bsheet" hidden>
+  <form class="sheet__panel" id="bform">
+    <button class="sheet__x" type="button" data-close aria-label="Close">×</button>
+    <h3>Leave your blessing</h3>
+    <label>Your name<input name="n" required maxlength="80" autocomplete="name"></label>
+    <label>Message<textarea name="m" required maxlength="600" rows="4"></textarea></label>
+    <button class="btn" type="submit">Send blessing</button>
+    <p class="fine">Opens WhatsApp with your blessing, addressed to the family.</p>
+  </form>
+</div>
+
+<div class="secret" id="secret" hidden>
+  <div class="secret__card"><p class="secret__k">A note just for you</p><p class="secret__msg"></p><p class="secret__x">Tap to close</p></div>
 </div>
 
 <div class="lightbox" id="lightbox" hidden>
@@ -53,8 +73,8 @@
 
 <audio id="song" src="audio/aaj-sajeya.mp3" preload="none" loop></audio>
 
-<script src="js/data.js?v=2"></script>
-<script src="js/art.js?v=2"></script>
-<script src="js/site.js?v=2"></script>
+<script src="js/data.js?v=4"></script>
+<script src="js/art.js?v=4"></script>
+<script src="js/site.js?v=4"></script>
 </body>
 </html>
