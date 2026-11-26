@@ -207,3 +207,15 @@ img{height:auto}
 .garland.deco-none{opacity:0}
 .birds{top:47%}
 @container (min-aspect-ratio: 1/2){ .t-it{font-size:3.45cqw} .txt{gap:.5cqw} }
+
+/* curtain of flower strands */
+.curtain{display:block}
+.curtain .strand{position:absolute;top:0;height:108%;width:12%;margin-left:-6%;transform-origin:50% 0;will-change:transform}
+.curtain .strand:not(.strand--img){background-repeat:no-repeat;animation:strandSway var(--t) ease-in-out var(--d) infinite alternate}
+.curtain .strand--img{width:13%;margin-left:-6.5%;display:flex;justify-content:center}
+.curtain .strand--img img{height:100%;width:auto;max-width:none;animation:strandSway var(--t) ease-in-out var(--d) infinite alternate;transform-origin:50% 0}
+@keyframes strandSway{from{rotate:-1.6deg}to{rotate:1.6deg}}
+/* walls and petal storm */
+.wall{position:absolute;top:0;left:0;height:100%;will-change:transform;overflow:visible}
+.wall img{position:absolute;max-width:none;height:auto;pointer-events:none}
+.fx img.storm{position:absolute;height:auto;max-width:none;will-change:transform}
