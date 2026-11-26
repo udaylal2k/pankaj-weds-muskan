@@ -15,7 +15,7 @@
   const EASE = "cubic-bezier(.2,.7,.2,1)";
 
   /* Each painting's own sky colour, so the words sit on clean sky */
-  const SKY = { invite: "#fcad84", court: "#fddaab", savedate: "#fddaad", bairana: "#fcb48f", mehndi: "#fdd779", haldi: "#fdda7f", reception: "#fdb27b", baraat: "#fcb28c", wedding: "#fab894", closing: "#fcb48d" };
+  const SKY = { invite: "#fdf7ec", court: "#8ec8f9", savedate: "#56b7fb", bairana: "#dda5cc", mehndi: "#6eb5b7", haldi: "#2198fd", reception: "#4a5e9e", baraat: "#e698c0", wedding: "#329cfa", closing: "#f6ad82" };
   const SHORT = { residence: "Teela Jamalpura, Bhopal", brideResidence: "Fefartal, Narmadapuram", resort: "Khajoori Sadak, Bhopal" };
 
   /* optional painted assets: used when present */
@@ -88,8 +88,11 @@
     const d = document.createElement("div"); d.className = "bloom"; fx.appendChild(d);
     d.animate([{ opacity: 0 }, { opacity: 0.35, offset: 0.4 }, { opacity: 0 }], { duration: 1500, easing: "ease-in-out" }).finished.then(() => d.remove());
   }
+  const INK = { haldi: "#55661a", mehndi: "#4f6a24", wedding: "#7a2a5c", reception: "#f3d48c", baraat: "#8a2346", bairana: "#7a2a3e", savedate: "#7a1622", closing: "#7a1622", invite: "#7a1622", court: "#7a1622" };
   function setBg(name, instant) {
-    win.style.setProperty("--sky", SKY[name] || "#f6e6cf");
+    win.style.setProperty("--sky", SKY[name] || "#f6e6cf"); win.style.setProperty("--ink-title", INK[name] || "#7a1622");
+    const HAZE = { haldi: .6, wedding: .6, court: .5, savedate: .55, mehndi: .5, reception: 0, invite: 0 };
+    win.style.setProperty("--haze", HAZE[name] ?? .3); win.classList.toggle("dark", name === "reception");
     $("bd").src = `scenes/${name}.webp`;
     if (name === curBg && front.classList.contains("on")) return;
     curBg = name; back.src = `scenes/${name}.webp`;
@@ -277,7 +280,7 @@
       const note = ev.sessions.map((s) => s.note).filter(Boolean).join(" · ");
       const spec = [["t-k", `Day ${dates.indexOf(ev.date) + 1}`], ["t-title", ev.title + (ev.amp ? ` <span style="font-size:.5em">${ev.amp}</span>` : "")]];
       if (ev.blurb) spec.push(["t-it", ev.blurb]);
-      spec.push(["rule", ""], ["t-caps", ev.date], ["t-time", times]);
+      spec.push(["t-date", ev.date.replace(/(\d+) /, "$1<sup>" + ({ 1: "st", 2: "nd", 3: "rd", 21: "st", 22: "nd", 23: "rd" }[+ev.date.match(/(\d+) /)[1]] || "th") + "</sup> ")], ["t-time", times]);
       if (note) spec.push(["t-sm", note]);
       spec.push(["t-venue", v.name], ["t-place", SHORT[ev.venue] || ""]);
       const top = DECO[ev.theme] && ASSET[DECO[ev.theme]] ? "19.5%" : "13%";
