@@ -483,3 +483,10 @@ main{position:relative;z-index:1}
   .frame:not(.frame--plain) .ladis-top,.frame:not(.frame--plain) .lights-top,.frame:not(.frame--plain) .clouds{display:none}
   .frame:not(.frame--plain) .content{background:none}
 }
+.feathers{object-position:50% 42%;transform-origin:50% 42%}
+.frame--date .content{padding-top:24cqw}
+.frame--date .content{gap:1.2cqw;padding-top:20cqw}
+.frame--date .big{font-size:15cqw}
+.frame--date .lead{font-size:max(13.5px,3.5cqw)}
+.frame--date .closing{font-size:7cqw}
+.frame--date .countdown{margin:1cqw 0}
