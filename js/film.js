@@ -20,7 +20,7 @@
 
   /* optional painted assets: used when present */
   const ASSET = {};
-  ["ornament.webp", "ganesha.png", "curtain.webp", "petal.png", "feather.png", "garland.png", "diya.png"].forEach((f) => {
+  ["ornament.webp", "ganesha.png", "curtain.webp", "petal.png", "feather.png", "garland.png", "diya.png", "ladi.png", "lights.png", "rose.png"].forEach((f) => {
     const im = new Image(); im.onload = () => { ASSET[f] = im.src; if (f === "ornament.webp") stage.style.setProperty("--ornament", `url(${im.src})`); if (f === "curtain.webp") $("curtain").classList.add("has-img"), $("curtain").style.backgroundImage = `url(${im.src})`; };
     im.src = "assets/" + f;
   });
@@ -63,98 +63,142 @@
       for (let i = 0; i < 30 && el.scrollWidth > max; i++) { fs *= 0.95; el.style.fontSize = fs + "px"; }
     });
   }
+  const SOFT = "cubic-bezier(.16,1,.3,1)";   // long, gentle settle
   function reveal(el) {
-    const script = /t-title|t-name|t-big/.test(el.className);
-    if (script) return anim(el, [{ opacity: 1, clipPath: "inset(-30% 100% -30% -6%)" }, { opacity: 1, clipPath: "inset(-30% -6% -30% -6%)" }], { duration: 1700, easing: "cubic-bezier(.45,0,.25,1)" });
-    return anim(el, [{ opacity: 0, transform: "translateY(1.6cqw)", filter: "blur(5px)" }, { opacity: 1, transform: "none", filter: "blur(0)" }], { duration: 1000 });
+    const c = el.className;
+    if (/t-title|t-name|t-big/.test(c)) {
+      return anim(el, [{ opacity: 1, clipPath: "inset(-35% 100% -35% -8%)", transform: "scale(1.04)" }, { opacity: 1, clipPath: "inset(-35% -8% -35% -8%)", transform: "scale(1)" }], { duration: 2000, easing: "cubic-bezier(.45,0,.2,1)" });
+    }
+    if (/t-ganesha|t-om/.test(c)) return anim(el, [{ opacity: 0, transform: "scale(.82)", filter: "drop-shadow(0 0 0 rgba(255,210,120,0))" }, { opacity: 1, transform: "scale(1)", filter: "drop-shadow(0 0 18px rgba(255,210,120,.9))", offset: .7 }, { opacity: 1, transform: "scale(1)", filter: "drop-shadow(0 0 6px rgba(255,210,120,.5))" }], { duration: 2200, easing: SOFT });
+    if (/t-caps|t-k|t-tag|t-time/.test(c)) return anim(el, [{ opacity: 0, letterSpacing: "0.45em", transform: "translateY(1cqw)" }, { opacity: 1, letterSpacing: getComputedStyle(el).letterSpacing, transform: "none" }], { duration: 1500, easing: SOFT });
+    if (/rule/.test(c)) return anim(el, [{ opacity: 0, transform: "scaleX(0)" }, { opacity: 1, transform: "scaleX(1)" }], { duration: 1200, easing: SOFT });
+    return anim(el, [{ opacity: 0, transform: "translateY(2cqw)" }, { opacity: 1, transform: "none" }], { duration: 1300, easing: SOFT });
   }
   async function play(els, step) { for (const el of els) { reveal(el); await wait(step || 620); } }
-  async function clearText(ms = 600) {
+  async function clearText(ms = 700) {
     const els = [...txt.children]; if (!els.length) return;
-    els.forEach((el) => anim(el, [{ opacity: getComputedStyle(el).opacity }, { opacity: 0, transform: "translateY(-1cqw)" }], { duration: ms }));
+    els.forEach((el, i) => anim(el, [{ opacity: getComputedStyle(el).opacity, transform: "none" }, { opacity: 0, transform: "translateY(-1.5cqw)" }], { duration: ms, delay: i * 25, easing: "cubic-bezier(.4,0,.6,1)" }));
     await wait(ms); txt.innerHTML = "";
   }
 
-  /* ---------- painted backgrounds: crossfade with a slow drift ---------- */
+  /* ---------- painted backgrounds: a camera push from one scene into the next ---------- */
   let front = $("bgA"), back = $("bgB"), curBg = "invite";
+  function bloom() { // a warm wash of light at the moment of a cut
+    if (reduce) return;
+    const d = document.createElement("div"); d.className = "bloom"; fx.appendChild(d);
+    d.animate([{ opacity: 0 }, { opacity: 0.75, offset: 0.4 }, { opacity: 0 }], { duration: 1500, easing: "ease-in-out" }).finished.then(() => d.remove());
+  }
   function setBg(name, instant) {
     win.style.setProperty("--sky", SKY[name] || "#f6e6cf");
     $("bd").src = `scenes/${name}.webp`;
-    if (name === curBg && front.classList.contains("on")) { drift(front); return; }
+    if (name === curBg && front.classList.contains("on")) return;
     curBg = name; back.src = `scenes/${name}.webp`;
     const go = () => {
-      back.classList.add("on"); front.classList.remove("on");
-      if (!instant && !reduce) { back.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 1100, easing: "ease" }); front.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 1100, easing: "ease" }); }
-      drift(back); [front, back] = [back, front];
+      const out = front, inn = back;
+      inn.classList.add("on"); out.classList.remove("on");
+      out.getAnimations().forEach((a) => a.cancel()); inn.getAnimations().forEach((a) => a.cancel());
+      if (instant || reduce) { inn.style.opacity = 1; out.style.opacity = 0; drift(inn); }
+      else {
+        out.style.opacity = ""; inn.style.opacity = "";
+        out.animate([{ opacity: 1, transform: "scale(1.04)" }, { opacity: 0, transform: "scale(1.22)" }], { duration: 1500, easing: "cubic-bezier(.5,0,.3,1)", fill: "forwards" });
+        inn.animate([{ opacity: 0, transform: "scale(1.14)" }, { opacity: 1, transform: "scale(1)" }], { duration: 1700, easing: SOFT, fill: "forwards" }).finished.then(() => drift(inn)).catch(() => {});
+      }
+      [front, back] = [back, front];
     };
     back.complete && back.naturalWidth ? go() : (back.onload = () => { back.onload = null; go(); });
   }
-  function drift(el) { if (!reduce) el.animate([{ transform: "scale(1.07)" }, { transform: "scale(1)" }], { duration: 9000, easing: "cubic-bezier(.25,.1,.25,1)", fill: "forwards" }); }
+  function drift(el) { if (!reduce) el.animate([{ transform: "scale(1)" }, { transform: "scale(1.06) translateY(-0.6%)" }], { duration: 14000, easing: "ease-in-out", fill: "forwards" }); }
 
-  /* ---------- the hanging garland that drops into the arch on every celebration ---------- */
-  const garland = $("garland"); let garlandOn = false;
-  function setGarland(on) {
-    if (on === garlandOn) return; garlandOn = on;
-    win.classList.toggle("has-garland", on);
-    anim(garland, on ? [{ transform: "translateY(-110%)", opacity: 0 }, { transform: "translateY(0)", opacity: 1 }] : [{ opacity: 1 }, { opacity: 0 }], { duration: on ? 1400 : 500, easing: on ? "cubic-bezier(.3,1.25,.5,1)" : "ease" });
+  /* ---------- each scene's own decoration (or none) ---------- */
+  const deco = $("garland"); let decoKind = null;
+  const DECO = { wedding: "garland.png", haldi: "ladi.png", reception: "lights.png" };
+  function setDeco(kind) {
+    const src = kind && ASSET[DECO[kind]];
+    if ((src || null) === decoKind) return;
+    const show = () => {
+      decoKind = src || null; deco.className = "garland deco-" + (kind || "none");
+      if (!src) return;
+      deco.src = src;
+      anim(deco, [{ transform: "translateY(-115%)", opacity: 0 }, { transform: "translateY(0)", opacity: 1 }], { duration: 1600, easing: "cubic-bezier(.3,1.2,.45,1)" });
+    };
+    if (decoKind) anim(deco, [{ opacity: 1 }, { opacity: 0 }], { duration: 400 }).finished.then(show); else show();
+    win.classList.toggle("has-garland", !!src);
   }
 
-  /* ---------- ambience ---------- */
-  function setAmbient(kind) {
-    ambient.innerHTML = ""; if (!kind || reduce) return;
-    const PAL = { pink: ["#f4a1bb", "#e9638e", "#f8c9d6", "#c9234a"], yellow: ["#ffd23f", "#ffb000", "#ffe580"], marigold: ["#ff9f1c", "#f26b1d", "#ffbf3f"], red: ["#c9234a", "#a3132f", "#e9638e"] };
-    if (kind === "glow") { for (let i = 0; i < 14; i++) ambient.insertAdjacentHTML("beforeend", `<b style="left:${(i * 7.3) % 96}%;--s:${1 + (i % 3)}cqw;--t:${6 + (i % 4)}s;--d:-${i * 0.6}s"></b>`); return; }
+  /* ---------- living skies ---------- */
+  let ambTimer = null;
+  const BIRDS = `<svg class="birds" viewBox="0 0 120 50" aria-hidden="true">${[[10,20,1],[26,12,.8],[40,24,.9],[52,8,.7],[64,18,.85],[78,26,.75],[90,14,.6],[34,34,.7]].map(([x,y,k],i)=>`<path style="animation-delay:-${i*0.13}s" d="M${x} ${y} q${4*k} ${-4*k} ${8*k} 0 q${4*k} ${-4*k} ${8*k} 0"/>`).join("")}</svg>`;
+  function setAmbient(kind, birds) {
+    clearInterval(ambTimer); ambient.innerHTML = ""; if (reduce) return;
+    if (birds) ambient.insertAdjacentHTML("beforeend", BIRDS);
+    if (!kind) return;
+    const PAL = { pink: ["#f4a1bb", "#e9638e", "#f8c9d6", "#c9234a"], yellow: ["#ffd23f", "#ffb000", "#ffe580"], marigold: ["#ff9f1c", "#f26b1d", "#ffbf3f"], green: ["#7fae55", "#f4c542", "#e46b9b"] };
+    if (kind === "glow" || kind === "diyas" || kind === "fireworks") {
+      for (let i = 0; i < 12; i++) ambient.insertAdjacentHTML("beforeend", `<b style="left:${(i * 8.3) % 96}%;--s:${1 + (i % 3)}cqw;--t:${7 + (i % 4)}s;--d:-${i * 0.7}s"></b>`);
+      if (kind === "diyas" && ASSET["diya.png"]) for (let i = 0; i < 5; i++) ambient.insertAdjacentHTML("beforeend", `<img class="float-diya" src="${ASSET["diya.png"]}" alt="" style="left:${8 + i * 19}%;--t:${13 + (i % 3) * 3}s;--d:-${i * 3.1}s;--s:${6 + (i % 2) * 2}cqw">`);
+      if (kind === "fireworks") { firework(); ambTimer = setInterval(() => { if (!paused) firework(); }, 1500); }
+      return;
+    }
+    if (kind === "red" && ASSET["petal.png"]) { for (let i = 0; i < 12; i++) ambient.insertAdjacentHTML("beforeend", `<img src="${ASSET["petal.png"]}" alt="" style="left:${(i * 8.7 + 3) % 98}%;--s:${2.6 + (i % 3) * 0.9}cqw;--t:${8 + (i % 5)}s;--d:-${i * 0.9}s">`); return; }
     const pal = PAL[kind];
-    if (kind === "red" && ASSET["petal.png"]) { for (let i = 0; i < 12; i++) ambient.insertAdjacentHTML("beforeend", `<img src="${ASSET["petal.png"]}" alt="" style="left:${(i * 8.7 + 3) % 98}%;--s:${2.6 + (i % 3) * 0.9}cqw;--t:${7 + (i % 5)}s;--d:-${i * 0.9}s">`); return; }
-    for (let i = 0; i < 12; i++) ambient.insertAdjacentHTML("beforeend", `<i style="left:${(i * 8.7 + 3) % 98}%;--s:${1.8 + (i % 3) * 0.7}cqw;--t:${7 + (i % 5)}s;--d:-${i * 0.9}s;--c:${pal[i % pal.length]}"></i>`);
+    for (let i = 0; i < 12; i++) ambient.insertAdjacentHTML("beforeend", `<i style="left:${(i * 8.7 + 3) % 98}%;--s:${1.8 + (i % 3) * 0.7}cqw;--t:${8 + (i % 5)}s;--d:-${i * 0.9}s;--c:${pal[i % pal.length]}"></i>`);
+  }
+  function firework() { // a soft burst of gold and rose sparks in the evening sky
+    const x = rnd(18, 82), y = rnd(10, 30), n = 30, col = ["#ffe39a", "#ffd0dc", "#fff4cf", "#ffb36b"][Math.floor(rnd(0, 4))];
+    for (let i = 0; i < n; i++) {
+      const s = document.createElement("span"); s.className = "spark"; s.style.left = x + "%"; s.style.top = y + "%"; s.style.background = col; ambient.appendChild(s);
+      const a = (i / n) * Math.PI * 2, r = rnd(12, 20);
+      s.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${Math.cos(a) * r}cqw,${Math.sin(a) * r + 3}cqw) scale(.4)`, opacity: 0 }], { duration: rnd(1300, 1800), easing: "cubic-bezier(.1,.7,.3,1)", fill: "forwards" }).finished.then(() => s.remove());
+    }
   }
 
-  /* ---------- full-screen transitions, like the reference video ---------- */
+  /* ---------- transitions that fly out of the screen, towards you ---------- */
   const rnd = (a, b) => a + Math.random() * (b - a);
+  function toCamera(make, n, spread = 1, dur = [1500, 2300]) {
+    if (reduce) return;
+    for (let i = 0; i < n; i++) {
+      const el = make(i); el.classList.add("cam"); fx.appendChild(el);
+      const ang = rnd(0, Math.PI * 2), dist = rnd(55, 95) * spread;
+      const x0 = rnd(-12, 12), y0 = rnd(-14, 10), r0 = rnd(-60, 60), r1 = r0 + rnd(-220, 220), s1 = rnd(2.4, 4.2);
+      el.animate([
+        { transform: `translate3d(${x0}cqw,${y0}cqh,0) scale(.04) rotate(${r0}deg)`, opacity: 0 },
+        { opacity: 1, offset: 0.18 },
+        { transform: `translate3d(${x0 + Math.cos(ang) * dist}cqw,${y0 + Math.sin(ang) * dist}cqh,0) scale(${s1}) rotate(${r1}deg)`, opacity: 1 }
+      ], { duration: rnd(dur[0], dur[1]), delay: rnd(0, 650), easing: "cubic-bezier(.55,.05,.75,.4)", fill: "both" }).finished.then(() => el.remove());
+    }
+  }
+  const imgEl = (src, w) => () => { const im = document.createElement("img"); im.src = src; im.style.width = w + "cqw"; im.style.marginLeft = -w / 2 + "cqw"; im.style.marginTop = -w / 2 + "cqw"; return im; };
+  const dotEl = (cols, w, round) => (i) => { const d = document.createElement("i"); const ww = rnd(w * 0.6, w * 1.2); Object.assign(d.style, { width: ww + "cqw", height: (round ? ww : ww * 0.68) + "cqw", marginLeft: -ww / 2 + "cqw", marginTop: -ww / 2 + "cqw", background: round ? `radial-gradient(circle, ${cols[i % cols.length]} 0 35%, rgba(255,230,160,0) 70%)` : cols[i % cols.length], borderRadius: round ? "50%" : "50% 0 50% 0" }); return d; };
   function featherZoom() { // the painted peacock-feather frame closes in, then the camera flies through its opening
     if (reduce) return Promise.resolve();
-    const im = document.createElement("img"); im.src = "scenes/feathers.webp";
-    Object.assign(im.style, { left: "-2%", top: "-2%", width: "104%", height: "104%", objectFit: "cover", objectPosition: "50% 42%", transformOrigin: "50% 42%" });
+    const im = document.createElement("img"); im.src = "scenes/feathers.webp"; im.className = "featherframe";
     fx.appendChild(im);
-    im.animate([{ opacity: 0, transform: "scale(1.6)" }, { opacity: 1, transform: "scale(1)", offset: 0.35 }, { opacity: 1, transform: "scale(1)", offset: 0.5 }, { opacity: 0, transform: "scale(7)" }], { duration: 2600, easing: "cubic-bezier(.55,0,.35,1)", fill: "forwards" }).finished.then(() => im.remove());
-    return wait(1250);
+    im.animate([{ opacity: 0, transform: "scale(1.7) rotate(-4deg)" }, { opacity: 1, transform: "scale(1) rotate(0)", offset: 0.38 }, { opacity: 1, transform: "scale(1)", offset: 0.52 }, { opacity: 0, transform: "scale(8)" }], { duration: 2900, easing: "cubic-bezier(.55,0,.35,1)", fill: "forwards" }).finished.then(() => im.remove());
+    return wait(1450);
   }
-  function flowers(src, n, sizeA, sizeB) { // big flowers tumble across the screen from the bottom right
-    if (reduce) return Promise.resolve();
+  function diyasRise(n) { // lit diyas drift up through the frame
+    if (reduce || !ASSET["diya.png"]) return;
     for (let i = 0; i < n; i++) {
-      const im = document.createElement("img"); im.src = src; const s = rnd(sizeA, sizeB);
-      Object.assign(im.style, { width: s + "cqw", left: rnd(-10, 100) + "%", top: rnd(-10, 100) + "%" });
+      const im = document.createElement("img"); im.src = ASSET["diya.png"]; const s = rnd(7, 14);
+      Object.assign(im.style, { width: s + "cqw", left: rnd(2, 88) + "%", top: "100%", filter: "drop-shadow(0 0 12px rgba(255,190,80,.9))" });
       fx.appendChild(im);
-      const dx = rnd(-90, -60), dy = rnd(-120, -80), r0 = rnd(0, 180);
-      im.animate([{ transform: `translate(${-dx}cqw,${-dy}cqh) rotate(${r0}deg)`, opacity: 1 }, { transform: `translate(${dx * 1.4}cqw,${dy * 1.3}cqh) rotate(${r0 + rnd(160, 320)}deg)`, opacity: 1 }], { duration: rnd(1900, 2600), delay: rnd(0, 450), easing: "cubic-bezier(.3,.1,.4,1)", fill: "both" }).finished.then(() => im.remove());
+      im.animate([{ transform: "translate3d(0,0,0) scale(.85)", opacity: 0 }, { opacity: 1, offset: 0.2 }, { transform: `translate3d(${rnd(-6, 6)}cqw,-125cqh,0) scale(1.05)`, opacity: 0 }], { duration: rnd(3200, 4400), delay: rnd(0, 900), easing: "cubic-bezier(.3,.2,.5,1)", fill: "both" }).finished.then(() => im.remove());
     }
-    return wait(900);
   }
-  function petals(colors, n, big) { // a burst of petals falling with a sway
-    if (reduce) return Promise.resolve();
-    const usePetal = ASSET["petal.png"] && colors === "red";
-    const pal = { red: ["#c9234a", "#a3132f", "#e9638e", "#f4a1bb"], pink: ["#f4a1bb", "#e9638e", "#f8c9d6", "#ffffff"], gold: ["#f6d47c", "#e6c57c", "#fff1c4", "#d9a441"], marigold: ["#ff9f1c", "#f26b1d", "#ffbf3f"] }[colors];
-    for (let i = 0; i < n; i++) {
-      const s = big ? rnd(4, 11) : rnd(1.5, 3.5);
-      let el;
-      if (usePetal) { el = document.createElement("img"); el.src = ASSET["petal.png"]; el.style.width = s + "cqw"; }
-      else { el = document.createElement("i"); Object.assign(el.style, { width: s + "cqw", height: s * 0.7 + "cqw", background: pal[i % pal.length] }); if (colors === "gold") { el.style.borderRadius = "50%"; el.style.boxShadow = "0 0 6px #ffe9a8"; } }
-      el.style.left = rnd(-5, 100) + "%"; el.style.top = "-12%"; fx.appendChild(el);
-      const sway = rnd(-25, 25), rot = rnd(-400, 400);
-      el.animate([{ transform: "translate(0,0) rotate(0)" }, { transform: `translate(${sway}cqw,60cqh) rotate(${rot / 2}deg)`, offset: 0.5 }, { transform: `translate(${-sway / 2}cqw,125cqh) rotate(${rot}deg)` }], { duration: rnd(2200, 3600), delay: rnd(0, 700), easing: "cubic-bezier(.35,.1,.5,1)", fill: "both" }).finished.then(() => el.remove());
+  const PETAL = () => ASSET["petal.png"] || null;
+  async function transition(kind, toScene) {
+    const swap = (ms) => setTimeout(() => { setBg(toScene); bloom(); }, ms);
+    if (kind === "diyas") { diyasRise(18); toCamera(dotEl(["#fff1c4", "#ffd78a"], 9, true), 26, 1.1); swap(700); return wait(1400); }
+    if (kind === "feathers") { if (ASSET["feather.png"]) toCamera(imgEl(ASSET["feather.png"], 22), 16, 1.2, [1600, 2400]); swap(800); return wait(1500); }
+    if (kind === "marigold") { toCamera(imgEl("scenes/marigold.png", 26), 26, 1.1); toCamera(dotEl(["#ffd23f", "#ffb000", "#ff9f1c"], 4), 40, 1.2); swap(750); return wait(1500); }
+    if (kind === "gold") { toCamera(dotEl(["#fff4cf", "#ffd88a", "#ffe9b0"], 14, true), 48, 1.2); swap(650); return wait(1400); }
+    if (kind === "baraat") { toCamera(imgEl("scenes/marigold.png", 20), 12, 1.1); toCamera(dotEl(["#ff9f1c", "#f26b1d", "#ffbf3f", "#c9234a"], 4.5), 50, 1.2); swap(700); return wait(1450); }
+    if (kind === "rose") {
+      if (ASSET["rose.png"]) toCamera(imgEl(ASSET["rose.png"], 24), 9, 1.1);
+      toCamera(PETAL() ? imgEl(PETAL(), 9) : dotEl(["#c9234a", "#a3132f", "#e9638e"], 6), 70, 1.25, [1500, 2500]);
+      swap(800); return wait(1600);
     }
-    return wait(600);
-  }
-
-  function diyas(n) { // lit diyas drift up through the frame
-    if (reduce || !ASSET["diya.png"]) return Promise.resolve();
-    for (let i = 0; i < n; i++) {
-      const im = document.createElement("img"); im.src = ASSET["diya.png"]; const s = rnd(7, 13);
-      Object.assign(im.style, { width: s + "cqw", left: rnd(2, 88) + "%", top: "100%", filter: "drop-shadow(0 0 10px rgba(255,190,80,.8))" });
-      fx.appendChild(im);
-      im.animate([{ transform: "translateY(0) scale(.9)", opacity: 0 }, { opacity: 1, offset: 0.2 }, { transform: `translate(${rnd(-6, 6)}cqw,-125cqh) scale(1)`, opacity: 0 }], { duration: rnd(3000, 4200), delay: rnd(0, 900), easing: "cubic-bezier(.3,.2,.5,1)", fill: "both" }).finished.then(() => im.remove());
-    }
-    return wait(700);
+    setBg(toScene); bloom(); return wait(500);
   }
 
   /* ---------- the scenes ---------- */
@@ -163,47 +207,43 @@
   const pSecond = sideId === "groom" ? W.parents.bride : W.parents.groom;
   const events = [...S.firstEvents, ...W.sharedEvents];
   const dates = [...new Set(events.map((e) => e.date))];
-  const TIN = { bairana: "diyas", mehndi: "feathers", haldi: "marigold", reception: "gold", baraat: "marigold-petals", wedding: "rose" };
-  const AMB = { bairana: "glow", mehndi: "pink", haldi: "yellow", reception: "glow", baraat: "marigold", wedding: "red" };
+  const TIN = { bairana: "diyas", mehndi: "feathers", haldi: "marigold", reception: "gold", baraat: "baraat", wedding: "rose" };
+  const AMB = { bairana: ["diyas", true], mehndi: ["green", false], haldi: ["yellow", true], reception: ["glow", false], baraat: ["fireworks", false], wedding: ["red", true] };
 
   const SC = [];
-  SC.push({ id: "shloka", dur: 7000, async run() {
-    setBg("invite"); setAmbient(null); setGarland(false); anim(mono, [{ opacity: 0 }], { duration: 10 });
+  SC.push({ id: "shloka", dur: 7500, async run() {
+    setBg("invite"); setAmbient("glow"); setDeco(null); anim(mono, [{ opacity: 0 }], { duration: 10 });
     const els = lines([[ASSET["ganesha.png"] ? "img" : "t-om", ASSET["ganesha.png"] ? "assets/ganesha.png" : "ॐ"], ["t-shloka", `${W.shloka[0]}<br>${W.shloka[1]}`], ["t-deva", "॥ श्री गणेशाय नमः ॥"]], "13%", "3cqw");
-    fit(); await play(els, 900);
+    fit(); await wait(400); await play(els, 1100);
   } });
-  SC.push({ id: "monogram", dur: 3600, async run() {
-    setBg("invite"); await clearText(700);
-    // the monogram arrives large in the middle, then glides up to its place
-    anim(mono, [{ opacity: 0, transform: "translateY(42cqh) scale(.3)" }, { opacity: 1, transform: "translateY(42cqh) scale(2.2)", offset: 0.35 }, { opacity: 1, transform: "translateY(42cqh) scale(2.2)", offset: 0.62 }, { opacity: 1, transform: "none" }], { duration: 3200, easing: "cubic-bezier(.6,0,.2,1)" });
+  SC.push({ id: "monogram", dur: 3800, async run() {
+    setBg("invite"); await clearText(800);
+    // the monogram arrives large in the middle, glows, then glides up to its place
+    anim(mono, [{ opacity: 0, transform: "translateY(42cqh) scale(.3)", filter: "drop-shadow(0 0 0 rgba(255,215,130,0))" }, { opacity: 1, transform: "translateY(42cqh) scale(2.2)", filter: "drop-shadow(0 0 22px rgba(255,215,130,.95))", offset: 0.35 }, { opacity: 1, transform: "translateY(42cqh) scale(2.2)", filter: "drop-shadow(0 0 10px rgba(255,215,130,.6))", offset: 0.62 }, { opacity: 1, transform: "none", filter: "drop-shadow(0 6px 10px rgba(120,80,30,.2))" }], { duration: 3400, easing: "cubic-bezier(.6,0,.2,1)" });
+    await wait(1000); toCamera(dotEl(["#fff4cf", "#ffd88a"], 3, true), 22, 0.7, [1200, 1800]);
   } });
-  SC.push({ id: "invite", dur: 10500, async run() {
+  SC.push({ id: "invite", dur: 11000, async run() {
     setBg("invite"); anim(mono, [{ opacity: 1, transform: "none" }], { duration: 10 });
     const els = lines([
       ["t-title", S.family], ["t-it", "cordially invite you to celebrate<br>the union of"],
       ["t-name", pFirst.name], ["t-sm", pFirst.line], ["t-amp", "&amp;"], ["t-name", pSecond.name], ["t-sm", pSecond.line],
       ["t-it", "Join us as they begin their forever"]], "22%", ".5cqw");
-    fit(); await play(els, 750);
+    fit(); await play(els, 820);
   } });
-  SC.push({ id: "date", dur: 9000, async run() {
-    await clearText(500); anim(mono, [{ opacity: 0 }], { duration: 500 });
-    await featherZoom(); setBg("savedate"); setAmbient("glow"); setGarland(false);
+  SC.push({ id: "date", dur: 9500, async run() {
+    await clearText(600); anim(mono, [{ opacity: 1 }, { opacity: 0 }], { duration: 600 });
+    setAmbient(null);
+    await featherZoom(); setBg("savedate", true); setAmbient("glow"); setDeco(null);
     const els = lines([["t-k", "Save the date"], ["t-big", `${S.dateShort.replace(" January 2027", "")}<small>January 2027</small>`], ["t-caps", S.place], ["rule", ""], ["count", ""], ["t-it", W.hero.tagline]], "13%", "1.4cqw");
-    countEl = els[4]; tick(); fit(); await play(els, 650);
+    countEl = els[4]; tick(); fit(); await play(els, 700);
   } });
   events.forEach((ev) => {
     const v = W.venues[ev.venue];
-    SC.push({ id: ev.theme, dur: 9500, ev, async run() {
-      await clearText(500);
-      const t = TIN[ev.theme];
-      if (t === "marigold") { const p = flowers("scenes/marigold.png", 30, 20, 40); setTimeout(() => setBg(ev.theme), 650); await p; }
-      else if (t === "marigold-petals") { const p = flowers("scenes/marigold.png", 10, 16, 30); petals("marigold", 40, true); setTimeout(() => setBg(ev.theme), 600); await p; }
-      else if (t === "rose") { petals("red", 70, true); petals("pink", 40, true); await wait(700); setBg(ev.theme); }
-      else if (t === "gold") { petals("gold", 60, false); await wait(400); setBg(ev.theme); }
-      else if (t === "diyas") { const p = ASSET["feather.png"] ? flowers(ASSET["feather.png"], 12, 26, 46) : Promise.resolve(); diyas(16); setTimeout(() => setBg(ev.theme), 700); await p; await wait(300); }
-      else if (t === "feathers") { const p = ASSET["feather.png"] ? flowers(ASSET["feather.png"], 14, 26, 46) : Promise.resolve(); setTimeout(() => setBg(ev.theme), 700); await p; }
-      else { setBg(ev.theme); await wait(300); }
-      setAmbient(AMB[ev.theme]); setGarland(true);
+    SC.push({ id: ev.theme, dur: 10000, ev, async run() {
+      await clearText(600); setDeco(null); setAmbient(null);
+      await transition(TIN[ev.theme], ev.theme);
+      const [amb, birds] = AMB[ev.theme] || [null, false];
+      setAmbient(amb, birds); setDeco(ev.theme);
       const times = ev.sessions.map((s) => (ev.sessions.length > 1 ? `${s.label} · ` : "") + s.time).join("&nbsp;&nbsp;|&nbsp;&nbsp;");
       const note = ev.sessions.map((s) => s.note).filter(Boolean).join(" · ");
       const spec = [["t-k", `Day ${dates.indexOf(ev.date) + 1}`], ["t-title", ev.title + (ev.amp ? ` <span style="font-size:.5em">${ev.amp}</span>` : "")]];
@@ -211,14 +251,16 @@
       spec.push(["rule", ""], ["t-caps", ev.date], ["t-time", times]);
       if (note) spec.push(["t-sm", note]);
       spec.push(["t-venue", v.name], ["t-place", SHORT[ev.venue] || ""]);
-      const els = lines(spec, "19.5%", ".8cqw"); fit(); await play(els, 560);
+      const top = DECO[ev.theme] && ASSET[DECO[ev.theme]] ? "19.5%" : "13%";
+      const els = lines(spec, top, ".8cqw"); fit(); await play(els, 600);
     } });
   });
   SC.push({ id: "end", dur: 0, async run() {
-    await clearText(500); petals("red", 50, true); await wait(500); setBg("closing"); setAmbient("red"); setGarland(true);
-    const els = lines([["t-k", "Join us in celebrating"], ["t-title", `${S.first} <span style="font-size:.6em;color:#c9a052">&amp;</span> ${S.second}`], ["t-it", "as we begin our forever"], ["rule", ""], ["t-caps", S.dateShort], ["t-sm", "Your presence and blessings mean the world to us."], ["t-tag", S.hashtag]], "18%", "1cqw");
-    fit(); await play(els, 650); await wait(600);
-    $("endbar").hidden = false; anim($("endbar"), [{ opacity: 0, transform: "translateY(3cqw)" }, { opacity: 1, transform: "none" }], { duration: 800 });
+    await clearText(600); setDeco(null); setAmbient(null);
+    await transition("rose", "closing"); setAmbient("red", true);
+    const els = lines([["t-k", "Join us in celebrating"], ["t-title", `${S.first} <span style="font-size:.6em;color:#c9a052">&amp;</span> ${S.second}`], ["t-it", "as we begin our forever"], ["rule", ""], ["t-caps", S.dateShort], ["t-sm", "Your presence and blessings mean the world to us."], ["t-tag", S.hashtag]], "13%", "1cqw");
+    fit(); await play(els, 700); await wait(700);
+    $("endbar").hidden = false; anim($("endbar"), [{ opacity: 0, transform: "translateY(3cqw)" }, { opacity: 1, transform: "none" }], { duration: 1000, easing: SOFT });
   } });
 
   /* ---------- story bars ---------- */
@@ -248,7 +290,7 @@
     // land on a scene cleanly: set its look at once, then play it
     txt.innerHTML = ""; fx.innerHTML = "";
     if (i <= 2) setBg("invite", true);
-    if (i <= 3) setGarland(false);
+    if (i <= 3) setDeco(null);
     if (i === 2) anim(mono, [{ opacity: 1, transform: "none" }], { duration: 10 }); else if (i !== 1) anim(mono, [{ opacity: 0 }], { duration: 10 });
     run(i);
   }
