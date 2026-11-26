@@ -1,3 +1,4 @@
+/* Pankaj & Muskan — a scroll-through invitation, one video-style frame per screen. */
 (function () {
   const W = window.WEDDING, A = window.ART;
   const q = new URLSearchParams(location.search).get("side") || "";
@@ -10,187 +11,189 @@
   document.querySelectorAll("[data-second]").forEach((e) => (e.textContent = S.second));
 
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const ladis = (n, palette) => {
+  const ladis = (count, pal, max) => {
     let s = "";
-    for (let i = 0; i < n; i++) { const dd = Math.abs(i / (n - 1) - 0.5) * 2; s += `<span style="--h:${(4 + dd * dd * 40 + ((i * 7) % 4)).toFixed(1)}%;--d:${(i % 5) * 0.35}s;--c1:${palette[i % palette.length]};--c2:${palette[(i + 1) % palette.length]}"></span>`; }
+    for (let i = 0; i < count; i++) {
+      const d = Math.abs(i / (count - 1) - 0.5) * 2;
+      s += `<span style="--h:${(3 + d * d * max + ((i * 7) % 4)).toFixed(1)}%;--d:${(i % 5) * 0.35}s;--c1:${pal[i % pal.length]};--c2:${pal[(i + 1) % pal.length]}"></span>`;
+    }
     return s;
   };
-  const mapBtns = (v) => `<div class="btns"><a class="btn" href="${v.google}" target="_blank" rel="noopener">Google Maps</a><a class="btn btn--ghost" href="${v.apple}" target="_blank" rel="noopener">Apple Maps</a></div>`;
   const calUrl = (c, v) => `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(c.title + " · " + S.first + " & " + S.second)}&dates=${c.start}/${c.end}&ctz=Asia/Kolkata&location=${encodeURIComponent(v.address)}&details=${encodeURIComponent(c.details)}`;
+  let n = 0;
+  const L = (cls, h, tag = "p") => `<${tag} class="ln ${cls}" style="--i:${n++}">${h}</${tag}>`;
+  const Lx = (cls, h, tag = "div") => `<${tag} class="ln ${cls}" style="--i:${n++}">${h}</${tag}>`;
 
-  const scene = (id, theme, inner, art, opts = {}) => `
-  <section class="scene scene--${theme}${opts.long ? " scene--long" : ""}" id="${id}" data-petals="${opts.petals || ""}">
+  /* Each painting's own top colour, so the text sits on clean sky */
+  const SKY = { invite: "#fdf6de", court: "#fef8ec", bairana: "#fbf7e9", mehndi: "#fdfcf8", haldi: "#c7e9e0", reception: "#fdf3e3", baraat: "#fde6eb", wedding: "#fdfdfb", closing: "#fffaf0" };
+  const frame = (id, theme, inner, o = {}) => `
+  <section class="frame frame--${theme}${o.img ? "" : " frame--plain"}" id="${id}" data-petals="${o.petals || ""}" data-burst="${o.burst || ""}">
     <div class="card">
       <div class="arch-gold" aria-hidden="true"></div>
-      <div class="win${opts.img ? " win--paint" : ""}"${opts.img ? ` style="--skyc:${PAINT[opts.img].sky};--ov:${PAINT[opts.img].ov}"` : ""}>
-        <div class="sky" aria-hidden="true"></div>
-        ${art || ""}
-        <div class="content">${inner}</div>
-        ${opts.img ? `<img class="paint" src="scenes/${opts.img}.webp" alt="" aria-hidden="true" width="768" height="1344" loading="lazy">` : ""}
+      <div class="win" style="--sky:${SKY[o.img] || "#f4ede1"}">
+        ${o.img ? `<img class="paint" src="scenes/${o.img}.webp" alt="" aria-hidden="true" width="768" height="1344"${o.eager ? "" : ' loading="lazy"'}>` : ""}
+        ${o.deco || ""}
+        <div class="content${o.top ? " content--" + o.top : ""}">${inner}</div>
+        ${o.after || ""}
       </div>
     </div>
   </section>`;
+  const lotus = `<img class="lotus-c lotus-c--l" src="brand/lotus-corner.png" alt="" aria-hidden="true" loading="lazy"><img class="lotus-c lotus-c--r" src="brand/lotus-corner.png" alt="" aria-hidden="true" loading="lazy">`;
 
-  /* painted scenes: sky colour behind the text, and how much of the painting's empty top the text may sit on */
-  const PAINT = {
-    invite: { sky: "#fdf6df", ov: 0.5 }, court: { sky: "#fbf3e2", ov: 0.48 }, bairana: { sky: "#fbf1e2", ov: 0.5 },
-    mehndi: { sky: "#f7f8f3", ov: 0.36 }, haldi: { sky: "#cdebe6", ov: 0.5 }, reception: { sky: "#f8e5d4", ov: 0.3 },
-    baraat: { sky: "#fbd0e2", ov: 0.36 }, wedding: { sky: "#e3eef1", ov: 0.3 }, closing: { sky: "#fff6e3", ov: 0.44 }
-  };
   const pFirst = sideId === "groom" ? W.parents.groom : W.parents.bride;
   const pSecond = sideId === "groom" ? W.parents.bride : W.parents.groom;
   let html = "";
 
-  /* 1. Shloka */
-  html += scene("top", "shloka",
-    `<div class="ganesh rv" style="--i:0" aria-hidden="true">ॐ</div>
-     <p class="shloka rv" style="--i:1">${W.shloka[0]}<br>${W.shloka[1]}</p>
-     <p class="kicker rv" style="--i:2">॥ श्री गणेशाय नमः ॥</p>
-     <a class="scroll-cue rv" style="--i:3" href="#invite" aria-label="Scroll to the invitation"><span></span></a>`,
-    "", { img: "invite" });
+  /* 1. Shloka — the flower-string curtain lifts off this frame */
+  n = 0;
+  html += frame("top", "shloka",
+    L("om", "ॐ", "div") + L("shloka", `${W.shloka[0]}<br>${W.shloka[1]}`) + L("tiny", "॥ श्री गणेशाय नमः ॥"),
+    { img: "invite", eager: true, after: `<a class="cue" href="#invite" aria-label="Next"><span></span></a>` });
 
   /* 2. Invitation */
-  html += scene("invite", "invite",
-    `<img class="mono rv" style="--i:0" src="brand/monogram-v2.png" alt="${S.first} and ${S.second} monogram" width="813" height="729">
-     <h1 class="script big rv" style="--i:1">${S.family}</h1>
-     <p class="lead rv" style="--i:2">${W.hero.tagline}</p>
-     <h2 class="script name rv" style="--i:3">${pFirst.name}</h2>
-     <p class="parent rv" style="--i:4">${pFirst.line}</p>
-     <p class="amp rv" style="--i:5">&amp;</p>
-     <h2 class="script name rv" style="--i:6">${pSecond.name}</h2>
-     <p class="parent rv" style="--i:7">${pSecond.line}</p>
-     <p class="date-line rv" style="--i:8">${S.dateShort}<span>${S.place}</span></p>
-     <div class="countdown rv" style="--i:9" id="countdown" aria-live="polite"></div>
-     <p class="closing rv" style="--i:10">${W.hero.closing}</p>
-     <div class="btns rv" style="--i:11"><a class="btn" href="#events">View schedule</a><a class="btn btn--ghost" href="#travel">Travel info</a></div>`,
-    "", { img: "court" });
+  n = 0;
+  html += frame("invite", "invite",
+    `<img class="mono ln" style="--i:${n++}" src="brand/monogram-v2.png" alt="${S.first} and ${S.second} monogram" width="813" height="729">` +
+    L("script fam", S.family, "h1") +
+    L("lead", "cordially invite you to celebrate the union of") +
+    L("script name", pFirst.name, "h2") + L("parent", pFirst.line) +
+    L("amp", "&amp;") +
+    L("script name", pSecond.name, "h2") + L("parent", pSecond.line) +
+    L("lead sm", "Join us as they begin their forever"),
+    { img: "court" });
 
-  /* 3. Peacock feather transition: zoom through the opening in the feathers */
-  html += `<section class="peacock" aria-hidden="true"><div class="peacock__stick"><img class="peacock__img" src="scenes/feathers.webp" alt="" width="768" height="1344">
-    <p class="peacock__txt"><span class="kicker">The celebrations</span><span class="script">Three days of joy</span></p></div></section>`;
+  /* 3. Peacock feathers open onto the date */
+  n = 0;
+  html += frame("date", "date",
+    L("kicker", "Save the date") +
+    L("script big", `${S.dateShort.replace(" January 2027", "")}<small>January 2027</small>`, "h2") +
+    L("place", S.place) +
+    `<div class="countdown ln" style="--i:${n++}" id="countdown" aria-live="polite"></div>` +
+    L("lead", W.hero.tagline) +
+    L("script closing", W.hero.closing) +
+    Lx("btns", `<a class="btn" href="#events">View schedule</a><a class="btn btn--ghost" href="#travel">Travel info</a>`),
+    { deco: lotus, after: `<img class="feathers" src="scenes/feathers.webp" alt="" aria-hidden="true" width="768" height="1344">` });
 
-  /* 4. Events */
+  /* 4. One frame per event */
   const events = [...S.firstEvents, ...W.sharedEvents];
-  html += `<div id="events" class="events-head"><p class="kicker">Celebrations</p><p class="sub">${S.eventsSubtitle}</p>
-    <a class="btn btn--ghost" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(schedText())}">Send schedule to yourself</a></div>`;
+  const dates = [...new Set(events.map((e) => e.date))];
+  const deco = {
+    haldi: () => `${A.birds()}<div class="ladis-top">${ladis(18, ["#ffcc1f", "#ffa51f", "#ffe066"], 30)}</div>`,
+    bairana: () => `<div class="ladis-top">${ladis(16, ["#f39a1e", "#ffc83d", "#e8601c"], 24)}</div>`,
+    mehndi: () => `<div class="ladis-top">${ladis(16, ["#3f8f3a", "#f4c542", "#d94c8a"], 24)}</div>`,
+    reception: () => `<div class="lights-top">${A.lights()}</div>`,
+    baraat: () => `${A.birds()}<div class="ladis-top">${ladis(18, ["#ff9f1c", "#ffffff", "#e8601c", "#ffc83d"], 24)}</div>`,
+    wedding: () => `${A.birds()}<div class="ladis-top">${ladis(18, ["#e46b9b", "#ffffff", "#f7b8cf", "#c93c74"], 28)}</div>`
+  };
   events.forEach((ev, idx) => {
-    const v = W.venues[ev.venue];
-    const sessions = ev.sessions.map((s) => `<li><b>${s.label}</b><span>${s.time}</span>${s.note ? `<em>${s.note}</em>` : ""}</li>`).join("");
-    const title = `${ev.pre ? `<span class="pre">${ev.pre}</span>` : ""}${ev.title}${ev.amp ? `<span class="post">${ev.amp}</span>` : ""}`;
-    const dayNo = [...new Set(events.map((e) => e.date))].indexOf(ev.date) + 1;
-    const inner = `<p class="kicker rv" style="--i:0">Day ${dayNo}</p>
-      <h2 class="script ev-title rv" style="--i:1">${title}</h2>
-      ${ev.blurb ? `<p class="blurb rv" style="--i:2">${ev.blurb}</p>` : ""}
-      <p class="ev-date rv" style="--i:3">${ev.date}</p>
-      <ul class="sessions rv" style="--i:4">${sessions}</ul>
-      <p class="venue rv" style="--i:5"><b>${v.name}</b>${v.address}</p>
-      <div class="btns rv" style="--i:6"><a class="btn" href="${v.google}" target="_blank" rel="noopener">Directions</a><a class="btn btn--ghost" href="${calUrl(ev.cal, v)}" target="_blank" rel="noopener">Add to calendar</a></div>`;
-    html += scene("ev-" + ev.theme, ev.theme, inner, eventArt(ev.theme), { img: ev.theme, petals: { haldi: "yellow", wedding: "pink", mehndi: "green", bairana: "marigold", baraat: "marigold" }[ev.theme] || "" });
+    const v = W.venues[ev.venue]; n = 0;
+    const times = ev.sessions.map((s) => `<span>${ev.sessions.length > 1 ? s.label + " · " : ""}${s.time}</span>`).join("");
+    const note = ev.sessions.map((s) => s.note).filter(Boolean).join(" · ");
+    html += frame(idx === 0 ? "events" : "ev-" + ev.theme, ev.theme,
+      L("kicker", `Day ${dates.indexOf(ev.date) + 1}`) +
+      L("script ev-title", `${ev.title}${ev.amp ? `<small>${ev.amp}</small>` : ""}`, "h2") +
+      (ev.blurb ? L("blurb", ev.blurb) : "") +
+      L("ev-date", ev.date) +
+      L("ev-time", times) +
+      (note ? L("ev-note", note) : "") +
+      L("venue", `<b>${v.name}</b>${v.address}`) +
+      L("links", `<a href="${v.google}" target="_blank" rel="noopener">Directions</a><span aria-hidden="true">·</span><a href="${calUrl(ev.cal, v)}" target="_blank" rel="noopener">Add to calendar</a>`),
+      { img: ev.theme, deco: (deco[ev.theme] || (() => ""))(), petals: { haldi: "yellow", wedding: "pink", mehndi: "green", bairana: "marigold", baraat: "marigold" }[ev.theme] || "", burst: ev.theme === "wedding" ? "pink" : "" });
   });
 
-  /* 5. Families */
+  /* 5. Families, one frame per side */
   const famOrder = sideId === "groom" ? ["groom", "bride"] : ["bride", "groom"];
-  let fam = `<p class="kicker rv" style="--i:0">With blessings</p><h2 class="script sec-title rv" style="--i:1">Our Families</h2>
-    <div class="parents rv" style="--i:2">
-      <div><h3>${pFirst.name}</h3><p>${pFirst.line}</p></div>
-      <div><h3>${pSecond.name}</h3><p>${pSecond.line}</p></div>
-    </div>`;
-  famOrder.forEach((k) => {
-    const F = W.families[k];
-    fam += `<article class="family rv" style="--i:3">
-      <h3 class="family__head">${F.heading}</h3>
-      <figure class="arch-photo"><img loading="lazy" src="${F.photo}" alt="Grandparents of ${k === "groom" ? "Pankaj" : "Muskan"}"></figure>
-      <p class="blessing">${F.blessing}</p>
-      ${F.groups.map(([h, list]) => `<div class="fgroup"><p class="kicker">${h}</p>${list.map((n) => `<p>${n}</p>`).join("")}</div>`).join("")}
-      <p class="addr">${F.address}</p>
-    </article>`;
+  famOrder.forEach((k, fi) => {
+    const F = W.families[k]; n = 0;
+    html += frame(fi === 0 ? "family" : "family-2", "family",
+      L("kicker", "With blessings") +
+      L("script sec", F.heading.replace("’s family", "’s Family"), "h2") +
+      Lx("photo photo--land", `<img loading="lazy" src="${F.photo}" alt="Grandparents of ${k === "groom" ? "Pankaj" : "Muskan"}" data-zoom>`, "figure") +
+      L("blessing", F.blessing) +
+      Lx("groups", F.groups.map(([h, list]) => `<div><p class="kicker">${h}</p>${list.map((x) => `<p>${x}</p>`).join("")}</div>`).join("")) +
+      L("addr", F.address),
+      { deco: lotus, top: "list" });
   });
-  html += scene("family", "family", fam, `<img class="lotus-c lotus-c--l" src="brand/lotus-corner.png" alt="" aria-hidden="true"><img class="lotus-c lotus-c--r" src="brand/lotus-corner.png" alt="" aria-hidden="true">`, { long: true });
 
-  /* 6. Story + moments */
-  const st = W.story;
-  let story = `<p class="kicker rv" style="--i:0">How we began</p><h2 class="script sec-title rv" style="--i:1">${st.title}</h2><p class="sub rv" style="--i:2">${st.subtitle}</p>
-    ${st.paragraphs.map((p, i) => `<p class="para rv" style="--i:${3 + i}">${p}</p>`).join("")}
-    <ol class="miles rv" style="--i:6">${st.milestones.map(([d, t]) => `<li><span>${d}</span>${t}</li>`).join("")}</ol>
-    <div class="moments">${W.moments.map((m, i) => `<figure class="moment rv" style="--i:${i}"><div class="arch-photo"><img loading="lazy" src="${m.src}" alt="${esc(m.alt)}" data-zoom></div><figcaption><b class="script">${m.title}</b><span>${m.sub}</span></figcaption></figure>`).join("")}</div>
-    <blockquote class="ours rv" style="--i:0">${st.ours.map((l) => `<p>${l}</p>`).join("")}<cite>— ${S.first} &amp; ${S.second}</cite></blockquote>`;
-  html += scene("story", "story", story, "", { long: true });
+  /* 6. Our story */
+  const st = W.story; n = 0;
+  html += frame("story", "story",
+    L("kicker", "How we began") + L("script sec", st.title, "h2") + L("sub", st.subtitle) +
+    st.paragraphs.map((p) => L("para", p)).join("") +
+    Lx("miles", st.milestones.map(([d, t]) => `<li><b>${d}</b><span>${t}</span></li>`).join(""), "ol"),
+    { deco: lotus, top: "list" });
 
-  /* 7. Gallery */
-  html += `<section class="gallery" id="gallery"><p class="kicker">Our journey</p><h2 class="script sec-title">Moments We Cherish</h2>
-    <div class="rail" tabindex="0" aria-label="Photo gallery">${W.gallery.map(([src, alt]) => `<figure class="arch-photo slide"><img loading="lazy" src="${src}" alt="${esc(alt)}" data-zoom></figure>`).join("")}</div>
-    <p class="hint">Swipe to see more · tap a photo to open it</p></section>`;
+  /* 7. Moments + gallery, swiped sideways inside the arch */
+  const slides = [...W.moments.map((m) => ({ src: m.src, alt: m.alt, t: m.title, s: m.sub })), ...W.gallery.map(([src, alt]) => ({ src, alt, t: "", s: "" }))];
+  n = 0;
+  html += frame("gallery", "gallery",
+    L("kicker", "Our journey") + L("script sec", "Moments We Cherish", "h2") +
+    Lx("rail", slides.map((p) => `<figure class="slide"><div class="photo"><img loading="lazy" src="${p.src}" alt="${esc(p.alt)}" data-zoom></div><figcaption>${p.t ? `<b>${p.t}</b><span>${p.s}</span>` : "&nbsp;"}</figcaption></figure>`).join("")) +
+    Lx("dots", slides.map(() => "<i></i>").join("")) +
+    Lx("ours", `${st.ours.map((l) => `<p>${l}</p>`).join("")}<cite>— ${S.first} &amp; ${S.second}</cite>`, "blockquote"),
+    { top: "list" });
 
-  /* 8. Travel + FAQ */
-  let tr = `<p class="kicker rv" style="--i:0">Getting there</p><h2 class="script sec-title rv" style="--i:1">Travel</h2><p class="sub rv" style="--i:2">${S.travelNote}</p>`;
-  S.pins.forEach((k, i) => { const v = W.venues[k]; tr += `<div class="pin rv" style="--i:${3 + i}"><h3>${v.name}</h3><p>${v.address}</p>${mapBtns(v)}</div>`; });
-  if (S.departure) { const d = S.departure; tr += `<div class="pin pin--dep rv" style="--i:5"><p class="kicker">${d.label}</p><p><b>From</b> ${d.from}</p><p><b>To</b> ${d.to}</p><p>${d.distance}</p><p class="route">${d.route}</p><p>${d.text}</p></div>`; }
-  tr += `<p class="note rv" style="--i:6">Distances and drive times are approximate and depend on traffic.</p>`;
-  html += scene("travel", "travel", tr, `<div class="art-bottom art-bottom--short">${A.palm(false)}${A.palm(true)}${A.balustrade()}</div>`, { long: true });
+  /* 8. Travel */
+  n = 0;
+  let tr = L("kicker", "Getting there") + L("script sec", "Travel", "h2") + L("sub", S.travelNote);
+  S.pins.forEach((k) => { const v = W.venues[k]; tr += Lx("pin", `<h3>${v.name}</h3><p>${v.address}</p><p class="links"><a href="${v.google}" target="_blank" rel="noopener">Google Maps</a><span aria-hidden="true">·</span><a href="${v.apple}" target="_blank" rel="noopener">Apple Maps</a></p>`); });
+  if (S.departure) { const d = S.departure; tr += Lx("pin", `<h3>${d.label}</h3><p>${d.text}</p><p class="small">${d.distance} · ${d.route}</p>`); }
+  tr += L("small", "Distances and drive times are approximate and depend on traffic.");
+  html += frame("travel", "travel", tr, { deco: lotus, top: "list" });
 
-  const faqs = S.faq.map((x) => (typeof x === "string" ? W.faqCommon[x] : x));
-  let fq = `<p class="kicker rv" style="--i:0">Good to know</p><h2 class="script sec-title rv" style="--i:1">Guest FAQ</h2><p class="sub rv" style="--i:2">${S.faqSubtitle}</p>
-    <div class="tip rv" style="--i:3"><p class="kicker">${S.faqTip.label}</p><p>${S.faqTip.text}</p></div>
-    <div class="faq rv" style="--i:4">${faqs.map(([qq, a], i) => `<details${i === 0 ? " open" : ""}><summary>${qq}</summary><p>${a}</p></details>`).join("")}</div>
-    <a class="btn rv" style="--i:5" href="https://wa.me/${S.phone}?text=${encodeURIComponent(`Hello, I have a question about ${S.first} & ${S.second}'s wedding.`)}" target="_blank" rel="noopener">Ask the family on WhatsApp</a>`;
-  html += scene("faq", "faq", fq, `<img class="lotus-c lotus-c--l" src="brand/lotus-corner.png" alt="" aria-hidden="true"><img class="lotus-c lotus-c--r" src="brand/lotus-corner.png" alt="" aria-hidden="true">`, { long: true });
+  /* 9. FAQ */
+  const faqs = S.faq.map((x) => (typeof x === "string" ? W.faqCommon[x] : x)); n = 0;
+  html += frame("faq", "faq",
+    L("kicker", "Good to know") + L("script sec", "Guest FAQ", "h2") + L("sub", S.faqSubtitle) +
+    Lx("tip", `<b>${S.faqTip.label}</b> ${S.faqTip.text}`) +
+    Lx("faq", faqs.map(([qq, a]) => `<details name="faq"><summary>${qq}</summary><p>${a}</p></details>`).join("")) +
+    L("links", `<a href="https://wa.me/${S.phone}?text=${encodeURIComponent(`Hello, I have a question about ${S.first} & ${S.second}'s wedding.`)}" target="_blank" rel="noopener">Ask the family on WhatsApp</a>`),
+    { top: "list" });
 
-  /* 9. Blessings */
-  html += `<section class="bless" id="blessings"><p class="kicker">With love</p><h2 class="script sec-title">Blessings Wall</h2><p class="sub">Leave a few words for the couple — your love is the gift</p>
-    <div class="wall" id="wall"></div>
-    <form class="bform" id="bform"><h3 class="script">Leave your blessing</h3>
-      <label>Your name<input name="n" required maxlength="80" autocomplete="name"></label>
-      <label>Message<textarea name="m" required maxlength="600" rows="3"></textarea></label>
-      <button class="btn" type="submit">Send blessing</button>
-      <p class="fine">Your blessing opens in WhatsApp, addressed to the family.</p>
-    </form></section>`;
+  /* 10. Blessings */
+  n = 0;
+  html += frame("blessings", "bless",
+    L("kicker", "With love") + L("script sec", "Blessings Wall", "h2") + L("sub", "Leave a few words for the couple — your love is the gift") +
+    `<div class="brail ln" style="--i:${n++}" id="wall" tabindex="0" aria-label="Blessings, swipe sideways"></div>` +
+    `<button class="btn ln" style="--i:${n++}" type="button" id="openForm">Leave your blessing</button>`,
+    { deco: lotus, top: "list" });
 
-  /* 10. Closing */
-  html += scene("end", "end",
-    `<p class="kicker rv" style="--i:0">Join us in celebrating</p>
-     <img class="mono mono--sm rv" style="--i:1" src="brand/monogram-v2.png" alt="" width="813" height="729">
-     <h2 class="script big rv" style="--i:2">${S.first} &amp; ${S.second}</h2>
-     <p class="lead rv" style="--i:3">Join us in celebrating as we begin our forever.</p>
-     <p class="date-line rv" style="--i:4">${S.dateShort}</p>
-     <p class="lead rv" style="--i:5">Your presence and blessings mean the world to us.</p>
-     <p class="tag rv" style="--i:6">${S.hashtag}</p>
-     <button class="secret-btn rv" style="--i:7" type="button" id="secretBtn" aria-expanded="false">✦</button>
-     <div class="secret" id="secret" hidden><p class="kicker">A note just for you</p><p>${W.secret}</p></div>
-     <footer class="foot rv" style="--i:8"><p>Made with love for our families</p><p>© 2026 Pankaj &amp; Muskan</p></footer>`,
-    "", { img: "closing", petals: "pink" });
+  /* 11. Closing */
+  n = 0;
+  html += frame("end", "end",
+    L("kicker", "Join us in celebrating") +
+    `<img class="mono mono--sm ln" style="--i:${n++}" src="brand/monogram-v2.png" alt="" width="813" height="729">` +
+    L("script fam", `${S.first} &amp; ${S.second}`, "h2") +
+    L("lead", "Join us in celebrating as we begin our forever.") +
+    L("place", S.dateShort) +
+    L("lead sm", "Your presence and blessings mean the world to us.") +
+    L("tag", S.hashtag) +
+    `<button class="secret-btn ln" style="--i:${n++}" type="button" id="secretBtn" aria-expanded="false" aria-label="A note just for you">✦</button>`,
+    { img: "closing", petals: "pink", after: `<footer class="foot">Made with love for our families · © 2026 Pankaj &amp; Muskan</footer>` });
 
   document.getElementById("main").innerHTML = html;
-  document.querySelectorAll(".gate .ladis").forEach((g) => {
-    let t = ""; for (let i = 0; i < 9; i++) t += `<span style="--d:${(i % 4) * 0.4}s;--c1:${i % 2 ? "#f6c7d6" : "#e9799f"};--c2:#fffaf2"></span>`; g.innerHTML = t;
-  });
 
-  function eventArt(theme) {
-    if (theme === "haldi") return `${A.birds()}<div class="ladis-top">${ladis(18, ["#ffcc1f", "#ffa51f", "#ffe066"])}</div>`;
-    if (theme === "bairana") return `<div class="ladis-top">${ladis(16, ["#f39a1e", "#ffc83d", "#e8601c"])}</div>`;
-    if (theme === "mehndi") return `<div class="ladis-top">${ladis(16, ["#3f8f3a", "#f4c542", "#d94c8a"])}</div>`;
-    if (theme === "reception") return `<div class="lights-top">${A.lights()}</div>`;
-    if (theme === "baraat") return `${A.birds()}<div class="ladis-top">${ladis(18, ["#ff9f1c", "#ffffff", "#e8601c", "#ffc83d"])}</div>`;
-    if (theme === "wedding") return `${A.birds()}<div class="ladis-top">${ladis(18, ["#e46b9b", "#ffffff", "#f7b8cf", "#c93c74"])}</div>`;
-    return "";
-  }
-  function schedText() {
-    return `${S.first} & ${S.second} — Wedding · ${S.dateShort}\n` + events.map((e) => `${e.date}: ${e.sessions.map((s) => s.label + " " + s.time).join(", ")} — ${W.venues[e.venue].name}, ${W.venues[e.venue].address}`).join("\n") + `\n${location.href.split("#")[0]}`;
-  }
-  function ganeshSvg() {
-    // Simple line Ganesha: head, ears, trunk, crown
-    return `<svg viewBox="0 0 120 120" width="88" height="88" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M60 20 l-10 12 h20 z"/><circle cx="60" cy="16" r="3"/>
-      <path d="M44 34 c-24 -6 -36 14 -28 32 c6 12 18 12 24 4"/><path d="M76 34 c24 -6 36 14 28 32 c-6 12 -18 12 -24 4"/>
-      <path d="M44 34 c4 -2 28 -2 32 0 c6 8 6 24 -2 34 c-4 6 -6 10 -6 16 c0 10 8 14 14 10 c4 -3 3 -9 -1 -10"/>
-      <path d="M44 34 c-6 8 -6 24 2 34 c3 4 6 8 8 12"/>
-      <path d="M52 50 q3 -3 6 0"/><path d="M62 50 q3 -3 6 0"/><path d="M55 40 h10"/><path d="M46 70 l-8 10"/></g>
-      <path d="M38 100 q22 10 44 0" stroke="currentColor" stroke-width="2" fill="none"/></svg>`;
-  }
+  /* Opening curtain hangs inside the first arch */
+  let cur = "";
+  for (let i = 0; i < 15; i++) cur += `<span style="--d:${(i % 4) * 0.3}s;--c1:${i % 2 ? "#f6c7d6" : "#e9799f"};--c2:#fffaf2"></span>`;
+  document.querySelector("#top .win").insertAdjacentHTML("beforeend", `<div class="curtain" id="curtain" aria-hidden="true">${cur}</div>`);
 
   /* ---------- Behaviour ---------- */
-  // Reveal on scroll
-  const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
-  document.querySelectorAll(".rv, .scene, .peacock, .gallery, .bless, .events-head").forEach((el) => io.observe(el));
+  const frames = [...document.querySelectorAll(".frame")];
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const progress = document.getElementById("progress");
+  const menuLinks = [...document.querySelectorAll(".menu a")];
+  let current = null;
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting || document.body.classList.contains("locked")) return;
+    const f = e.target; current = f;
+    f.classList.add("play");
+    if (f.dataset.burst && !f.dataset.burstDone) { f.dataset.burstDone = "1"; burst(f.dataset.burst); }
+    const i = frames.indexOf(f);
+    progress.style.setProperty("--p", ((i + 1) / frames.length).toFixed(3));
+    let on = -1; menuLinks.forEach((a, k) => { const t = document.querySelector(a.getAttribute("href")); if (t && frames.indexOf(t) <= i) on = k; });
+    menuLinks.forEach((a, k) => a.classList.toggle("on", k === on));
+  }), { threshold: 0.5 });
 
   // Countdown
   const cd = document.getElementById("countdown"), target = new Date(W.iso).getTime();
@@ -199,103 +202,85 @@
     const days = Math.floor(d / 864e5); d -= days * 864e5;
     const h = Math.floor(d / 36e5); d -= h * 36e5;
     const m = Math.floor(d / 6e4); const s = Math.floor((d - m * 6e4) / 1000);
-    cd.innerHTML = [[days, "Days"], [h, "Hours"], [m, "Minutes"], [s, "Seconds"]].map(([n, l]) => `<div><b>${String(n).padStart(2, "0")}</b><span>${l}</span></div>`).join("") + `<p>days to forever</p>`;
+    cd.innerHTML = [[days, "Days"], [h, "Hours"], [m, "Mins"], [s, "Secs"]].map(([v, l]) => `<div><b>${String(v).padStart(2, "0")}</b><span>${l}</span></div>`).join("");
   }
   tick(); setInterval(tick, 1000);
 
-  // Gate + music
+  // Opening tap: strings lift, music starts, the first frame plays
   const gate = document.getElementById("gate"), song = document.getElementById("song"), mBtn = document.getElementById("music");
   let playing = false;
   function setPlaying(p) { playing = p; mBtn.setAttribute("aria-pressed", String(p)); mBtn.setAttribute("aria-label", p ? "Mute music" : "Play music"); mBtn.classList.toggle("off", !p); }
   document.getElementById("gateBtn").addEventListener("click", () => {
-    gate.classList.add("open"); document.body.classList.remove("locked");
+    gate.classList.add("open"); document.getElementById("curtain").classList.add("lift");
     song.volume = 0.6; song.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
-    setTimeout(() => gate.remove(), 1900);
+    setTimeout(() => { document.body.classList.remove("locked"); document.body.classList.add("opened"); frames.forEach((f) => io.observe(f)); }, 500);
+    setTimeout(() => gate.remove(), 1400);
   });
   mBtn.addEventListener("click", () => { if (playing) { song.pause(); setPlaying(false); } else { song.play().then(() => setPlaying(true)).catch(() => {}); } });
   document.addEventListener("visibilitychange", () => { if (document.hidden && playing) song.pause(); else if (!document.hidden && playing) song.play().catch(() => {}); });
 
-  // WhatsApp share
   document.getElementById("waShare").href = `https://wa.me/?text=${encodeURIComponent(`You're invited to ${S.first} & ${S.second}'s wedding · ${S.dateShort} · ${S.place}\n${location.href.split("#")[0]}`)}`;
 
-  // Blessings wall: saved messages from the original wall
+  // Menu sheet
+  const menu = document.getElementById("menu"), mOpen = document.getElementById("menuBtn");
+  const setMenu = (o) => { menu.hidden = !o; mOpen.setAttribute("aria-expanded", String(o)); };
+  mOpen.addEventListener("click", () => setMenu(menu.hidden));
+  menu.addEventListener("click", (e) => { if (e.target.closest("a") || e.target === menu) setMenu(false); });
+
+  // Blessings
   const wall = document.getElementById("wall");
-  const card = (b) => `<figure class="bcard"><blockquote>“${esc(b.message)}”</blockquote><figcaption>— ${esc(b.name)}</figcaption></figure>`;
+  const card = (b) => `<figure class="bcard"><blockquote>${esc(b.message)}</blockquote><figcaption>— ${esc(b.name)}</figcaption></figure>`;
   wall.innerHTML = W.blessingsSeed.map(card).join("");
   fetch("blessings.json").then((r) => r.json()).then((list) => { wall.innerHTML += list.map(card).join(""); }).catch(() => {});
+  const sheet = document.getElementById("bsheet");
+  document.getElementById("openForm").addEventListener("click", () => { sheet.hidden = false; setTimeout(() => sheet.querySelector("input").focus(), 50); });
+  sheet.addEventListener("click", (e) => { if (e.target === sheet || e.target.closest("[data-close]")) sheet.hidden = true; });
   document.getElementById("bform").addEventListener("submit", (e) => {
     e.preventDefault();
-    const fd = new FormData(e.target), n = fd.get("n").trim(), m = fd.get("m").trim();
-    if (!n || !m) return;
-    window.open(`https://wa.me/${S.phone}?text=${encodeURIComponent(`Blessing for ${S.first} & ${S.second} 💐\n\n“${m}”\n— ${n}`)}`, "_blank", "noopener");
+    const fd = new FormData(e.target), nm = String(fd.get("n")).trim(), msg = String(fd.get("m")).trim();
+    if (!nm || !msg) return;
+    window.open(`https://wa.me/${S.phone}?text=${encodeURIComponent(`Blessing for ${S.first} & ${S.second} 💐\n\n“${msg}”\n— ${nm}`)}`, "_blank", "noopener");
+    sheet.hidden = true;
   });
 
   // Secret note
   const sb = document.getElementById("secretBtn"), sn = document.getElementById("secret");
-  sb.addEventListener("click", () => { sn.hidden = !sn.hidden; sb.setAttribute("aria-expanded", String(!sn.hidden)); });
+  sn.querySelector(".secret__msg").textContent = W.secret;
+  sb.addEventListener("click", () => { sn.hidden = false; sb.setAttribute("aria-expanded", "true"); });
+  sn.addEventListener("click", () => { sn.hidden = true; sb.setAttribute("aria-expanded", "false"); });
+
+  // Gallery dots
+  const rail = document.querySelector(".rail"), dots = [...document.querySelectorAll(".dots i")];
+  const setDot = () => { const w = rail.firstElementChild.getBoundingClientRect().width + 12; const i = Math.round(rail.scrollLeft / w); dots.forEach((d, k) => d.classList.toggle("on", k === i)); };
+  rail.addEventListener("scroll", () => requestAnimationFrame(setDot), { passive: true }); setDot();
 
   // Lightbox
   const lb = document.getElementById("lightbox"), lbi = lb.querySelector("img");
-  document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-zoom]"); if (!t) return;
-    lbi.src = t.src; lbi.alt = t.alt; lb.hidden = false;
-  });
+  document.addEventListener("click", (e) => { const t = e.target.closest("[data-zoom]"); if (!t) return; lbi.src = t.src; lbi.alt = t.alt; lb.hidden = false; });
   lb.addEventListener("click", () => (lb.hidden = true));
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") lb.hidden = true; });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { lb.hidden = true; sheet.hidden = true; setMenu(false); } });
 
-  // Nav: show after the first screen, mark active section
-  const nav = document.getElementById("nav");
-  const links = [...nav.querySelectorAll("a")];
-  const secs = links.map((a) => document.querySelector(a.getAttribute("href")));
-  let ticking = false;
-  window.addEventListener("scroll", () => {
-    if (ticking) return; ticking = true;
-    requestAnimationFrame(() => {
-      nav.classList.toggle("show", scrollY > innerHeight * 0.6);
-      let cur = -1; secs.forEach((s, i) => { if (s && s.getBoundingClientRect().top < innerHeight * 0.4) cur = i; });
-      links.forEach((a, i) => a.classList.toggle("on", i === cur));
-      peacock(); ticking = false;
-    });
-  }, { passive: true });
-
-  // Peacock feathers part as you scroll through
-  const pk = document.querySelector(".peacock");
-  function peacock() {
-    const b = pk.getBoundingClientRect();
-    const p = Math.min(1, Math.max(0, -b.top / (b.height - innerHeight)));
-    pk.style.setProperty("--p", p.toFixed(3));
-  }
-  peacock();
-
-  /* Falling petals, coloured by the scene on screen */
+  /* Petals: a soft fall in the frame on screen, and a burst when the wedding frame arrives */
   const cv = document.getElementById("petals"), ctx = cv.getContext("2d");
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const PAL = { pink: ["#f49ab8", "#f7c0d2", "#e8638f", "#fde3ec"], yellow: ["#ffd23f", "#ffc21a", "#fff07a", "#ffb000"], marigold: ["#ff9f1c", "#ffbf3f", "#f26b1d"], green: ["#9cc46a", "#f4c542", "#e46b9b"] };
-  let mode = "", parts = [], dpr = Math.min(2, devicePixelRatio || 1);
-  function size() { cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; }
+  let parts = []; const dpr = Math.min(2, devicePixelRatio || 1);
+  const size = () => { cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; };
   size(); addEventListener("resize", size);
-  const sceneEls = [...document.querySelectorAll("[data-petals]")];
-  function currentMode() {
-    let m = ""; sceneEls.forEach((s) => { const b = s.getBoundingClientRect(); if (b.top < innerHeight * 0.55 && b.bottom > innerHeight * 0.45) m = s.dataset.petals; });
-    return m;
-  }
-  function spawn(m) {
-    const big = m === "pink";
-    return { x: Math.random() * innerWidth, y: -20 - Math.random() * innerHeight * 0.6, s: (big ? 7 : 4) + Math.random() * (big ? 9 : 5), vy: 0.5 + Math.random() * 1.1, ph: Math.random() * 6.28, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.05, c: PAL[m][Math.floor(Math.random() * PAL[m].length)] };
-  }
-  function frame() {
-    const m = document.body.classList.contains("locked") ? "" : currentMode();
-    if (m !== mode) { mode = m; if (m) parts = parts.concat(Array.from({ length: innerWidth < 600 ? 16 : 26 }, () => spawn(m))).slice(-50); }
+  const mk = (m, big) => ({ x: Math.random() * innerWidth, y: -20 - Math.random() * 60, s: (big ? 10 : 4) + Math.random() * (big ? 14 : 5), vy: big ? 3 + Math.random() * 4 : 0.6 + Math.random() * 1, vx: big ? 1 + Math.random() * 3 : 0, ph: Math.random() * 6.28, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * (big ? 0.15 : 0.05), c: PAL[m][Math.floor(Math.random() * PAL[m].length)], m, al: 0.9, big });
+  function burst(m) { if (reduce) return; for (let i = 0; i < 46; i++) { const p = mk(m, true); p.x = Math.random() * innerWidth * 1.1 - innerWidth * 0.3; p.y = -40 - Math.random() * innerHeight * 0.5; parts.push(p); } }
+  function loop() {
+    const m = current ? current.dataset.petals : "";
+    if (m && parts.filter((p) => !p.big).length < (innerWidth < 600 ? 16 : 24) && Math.random() < 0.15) parts.push(mk(m, false));
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, innerWidth, innerHeight);
     parts = parts.filter((p) => {
-      p.y += p.vy; p.ph += 0.02; p.x += Math.sin(p.ph) * 0.6; p.rot += p.vr;
-      if (!mode) { p.al = (p.al ?? 0.85) - 0.02; if (p.al <= 0) return false; }
-      if (p.y > innerHeight + 20) { if (mode && PAL[mode]) { Object.assign(p, spawn(mode)); p.y = -20; } else return false; }
-      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c; ctx.globalAlpha = p.al ?? 0.85;
-      ctx.beginPath(); ctx.ellipse(0, 0, p.s, p.s * 0.6, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      p.y += p.vy; p.ph += 0.02; p.x += p.vx + Math.sin(p.ph) * 0.6; p.rot += p.vr;
+      if (!p.big && p.m !== m) p.al -= 0.025;
+      if (p.al <= 0 || p.y > innerHeight + 30) return false;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.globalAlpha = p.al; ctx.fillStyle = p.c;
+      ctx.beginPath(); ctx.ellipse(0, 0, p.s, p.s * 0.62, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       return true;
     });
-    requestAnimationFrame(frame);
+    requestAnimationFrame(loop);
   }
-  if (!reduce) requestAnimationFrame(frame);
+  if (!reduce) requestAnimationFrame(loop);
 })();
