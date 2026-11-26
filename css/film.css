@@ -219,3 +219,26 @@ img{height:auto}
 .wall{position:absolute;top:0;left:0;height:100%;will-change:transform;overflow:visible}
 .wall img{position:absolute;max-width:none;height:auto;pointer-events:none}
 .fx img.storm{position:absolute;height:auto;max-width:none;will-change:transform}
+
+/* ===== the video's clean typography ===== */
+.l{text-shadow:none}
+.t-title,.t-name,.t-big{color:var(--ink-title,#7a1622)}
+.t-date{font-weight:700;font-size:4.1cqw;color:#3e2a24}
+.t-date sup{font-size:.6em}
+.t-time{font-family:var(--serif);font-weight:600;font-size:3.8cqw;letter-spacing:0;color:#3e2a24}
+.t-venue{font-weight:700;font-size:4cqw;color:#3e2a24}
+.t-place{font-style:italic;font-weight:600;font-size:3.5cqw;color:#5b4a44}
+.t-it{color:#3e2a24}
+.t-sm{color:#5b4a44}
+.t-k{color:#8a6a3a}
+.stage{background-color:#fbf8f2}
+@container (min-aspect-ratio: 1/2){ .t-date{font-size:3.6cqw}.t-time{font-size:3.3cqw}.t-venue{font-size:3.5cqw}.t-place{font-size:3.1cqw} }
+/* a soft haze of light behind the words on bright skies */
+.haze{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:var(--haze,.3);transition:opacity 1.2s ease;background:radial-gradient(80% 36% at 50% 27%,rgba(255,255,255,.95),rgba(255,255,255,.55) 45%,rgba(255,255,255,0) 78%)}
+.win.dark .t-it,.win.dark .t-date,.win.dark .t-time,.win.dark .t-venue{color:#fff6e6}
+.win.dark .t-place,.win.dark .t-sm{color:#f1dcc0}
+.win.dark .t-k{color:#f3d48c}
+/* show each painting's full width (nothing at the edges gets cut); its own sky colour fills above */
+.win{background:var(--sky,#f6e6cf)}
+.bg{top:auto;bottom:0;height:auto;min-height:0;object-fit:contain;object-position:50% 100%;transform-origin:50% 100%;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 7%);mask-image:linear-gradient(to bottom,transparent 0,#000 7%)}
