@@ -25,7 +25,7 @@
   const Lx = (cls, h, tag = "div") => `<${tag} class="ln ${cls}" style="--i:${n++}">${h}</${tag}>`;
 
   /* Each painting's own top colour, so the text sits on clean sky */
-  const SKY = { invite: "#f8ecd5", court: "#faf1de", bairana: "#fae0c9", mehndi: "#fcfaed", haldi: "#fefbf1", reception: "#f6e6cf", baraat: "#fcdfe4", wedding: "#e3f4fb", closing: "#fefcf6" };
+  const SKY = { invite: "#f8ecd5", court: "#faf1de", bairana: "#fae0c9", mehndi: "#fcfaed", haldi: "#fefbf1", reception: "#f6e6cf", baraat: "#fcdfe4", wedding: "#fab894", closing: "#fefcf6" };
   const frame = (id, theme, inner, o = {}) => `
   <section class="frame frame--${theme}${o.img ? "" : " frame--plain"}" id="${id}" data-petals="${o.petals || ""}" data-burst="${o.burst || ""}">
     <div class="card">
