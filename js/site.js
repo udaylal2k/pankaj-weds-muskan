@@ -32,6 +32,7 @@
       <div class="arch-gold" aria-hidden="true"></div>
       <div class="win" style="--sky:${SKY[o.img] || "#f4ede1"}">
         ${o.img ? `<img class="paint" src="scenes/${o.img}.webp" alt="" aria-hidden="true" width="768" height="1344"${o.eager ? "" : ' loading="lazy"'}>` : ""}
+        ${o.img ? '<div class="clouds" aria-hidden="true"><i></i><i></i><i></i></div>' : ""}
         ${o.deco || ""}
         <div class="content${o.top ? " content--" + o.top : ""}">${inner}</div>
         ${o.after || ""}
@@ -178,6 +179,25 @@
   for (let i = 0; i < 15; i++) cur += `<span style="--d:${(i % 4) * 0.3}s;--c1:${i % 2 ? "#f6c7d6" : "#e9799f"};--c2:#fffaf2"></span>`;
   document.querySelector("#top .win").insertAdjacentHTML("beforeend", `<div class="curtain" id="curtain" aria-hidden="true">${cur}</div>`);
 
+  /* Laptop side panel: names, date, live countdown and the chapter list */
+  const LABEL = { top: "Invitation", invite: "The families invite", date: "Save the date", family: "Families", "family-2": "Families", story: "Our story", gallery: "Moments", travel: "Travel", faq: "Guest FAQ", blessings: "Blessings", end: "With love" };
+  const sideItems = [...document.querySelectorAll(".frame")].map((f) => {
+    const t = f.querySelector(".ev-title"); const k = f.querySelector(".kicker");
+    return { id: f.id, label: t ? t.childNodes[0].textContent.trim() : LABEL[f.id] || "", day: t && k ? k.textContent : "" };
+  }).filter((x, i, a) => x.label && a.findIndex((y) => y.label === x.label) === i);
+  document.body.insertAdjacentHTML("afterbegin", `<aside class="side" aria-label="Wedding details">
+    <div class="side__ring" aria-hidden="true"></div>
+    <div class="side__in">
+      <img class="side__mono" src="brand/monogram-v2.png" alt="" width="813" height="729">
+      <p class="side__k">are getting married</p>
+      <p class="side__names">${S.first}<i>&amp;</i>${S.second}</p>
+      <p class="side__date">${S.dateShort}<span>${S.place}</span></p>
+      <div class="side__count" id="sideCount" aria-hidden="true"></div>
+      <nav class="side__nav" aria-label="Chapters">${sideItems.map((x) => `<a href="#${x.id}" data-f="${x.id}">${x.day ? `<small>${x.day}</small>` : ""}${x.label}</a>`).join("")}</nav>
+      <p class="side__tag">${S.hashtag}</p>
+    </div></aside>`);
+  const sideLinks = [...document.querySelectorAll(".side__nav a")];
+
   /* ---------- Behaviour ---------- */
   const frames = [...document.querySelectorAll(".frame")];
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -191,6 +211,9 @@
     if (f.dataset.burst && !f.dataset.burstDone) { f.dataset.burstDone = "1"; burst(f.dataset.burst); }
     const i = frames.indexOf(f);
     progress.style.setProperty("--p", ((i + 1) / frames.length).toFixed(3));
+    let sOn = -1; sideLinks.forEach((a, k) => { const t = document.getElementById(a.dataset.f); if (t && frames.indexOf(t) <= i) sOn = k; });
+    sideLinks.forEach((a, k) => a.classList.toggle("on", k === sOn));
+    if (f.dataset.petals && !f.dataset.sprinkled) { f.dataset.sprinkled = "1"; burst(f.dataset.petals, 18); }
     let on = -1; menuLinks.forEach((a, k) => { const t = document.querySelector(a.getAttribute("href")); if (t && frames.indexOf(t) <= i) on = k; });
     menuLinks.forEach((a, k) => a.classList.toggle("on", k === on));
   }), { threshold: 0.5 });
@@ -202,7 +225,12 @@
     const days = Math.floor(d / 864e5); d -= days * 864e5;
     const h = Math.floor(d / 36e5); d -= h * 36e5;
     const m = Math.floor(d / 6e4); const s = Math.floor((d - m * 6e4) / 1000);
-    cd.innerHTML = [[days, "Days"], [h, "Hours"], [m, "Mins"], [s, "Secs"]].map(([v, l]) => `<div><b>${String(v).padStart(2, "0")}</b><span>${l}</span></div>`).join("");
+    const vals = [[days, "Days"], [h, "Hours"], [m, "Mins"], [s, "Secs"]];
+    [cd, document.getElementById("sideCount")].forEach((box) => {
+      if (!box) return;
+      if (!box.children.length) box.innerHTML = vals.map(([, l]) => `<div><b></b><span>${l}</span></div>`).join("");
+      vals.forEach(([v], k) => { const b = box.children[k].firstElementChild, t = String(v).padStart(2, "0"); if (b.textContent !== t) { b.textContent = t; b.classList.remove("flip"); void b.offsetWidth; b.classList.add("flip"); } });
+    });
   }
   tick(); setInterval(tick, 1000);
 
@@ -212,6 +240,7 @@
   function setPlaying(p) { playing = p; mBtn.setAttribute("aria-pressed", String(p)); mBtn.setAttribute("aria-label", p ? "Mute music" : "Play music"); mBtn.classList.toggle("off", !p); }
   document.getElementById("gateBtn").addEventListener("click", () => {
     gate.classList.add("open"); document.getElementById("curtain").classList.add("lift");
+    burst("gold", 60); setTimeout(() => burst("pink", 40), 300);
     song.volume = 0.6; song.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
     setTimeout(() => { document.body.classList.remove("locked"); document.body.classList.add("opened"); frames.forEach((f) => io.observe(f)); }, 500);
     setTimeout(() => gate.remove(), 1400);
@@ -262,18 +291,28 @@
 
   /* Petals: a soft fall in the frame on screen, and a burst when the wedding frame arrives */
   const cv = document.getElementById("petals"), ctx = cv.getContext("2d");
-  const PAL = { pink: ["#f49ab8", "#f7c0d2", "#e8638f", "#fde3ec"], yellow: ["#ffd23f", "#ffc21a", "#fff07a", "#ffb000"], marigold: ["#ff9f1c", "#ffbf3f", "#f26b1d"], green: ["#9cc46a", "#f4c542", "#e46b9b"] };
+  const PAL = { pink: ["#f49ab8", "#f7c0d2", "#e8638f", "#fde3ec"], yellow: ["#ffd23f", "#ffc21a", "#fff07a", "#ffb000"], marigold: ["#ff9f1c", "#ffbf3f", "#f26b1d"], green: ["#9cc46a", "#f4c542", "#e46b9b"], gold: ["#f6d47c", "#e6c57c", "#fff1c4", "#d9a441"] };
   let parts = []; const dpr = Math.min(2, devicePixelRatio || 1);
   const size = () => { cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; };
   size(); addEventListener("resize", size);
   const mk = (m, big) => ({ x: Math.random() * innerWidth, y: -20 - Math.random() * 60, s: (big ? 10 : 4) + Math.random() * (big ? 14 : 5), vy: big ? 3 + Math.random() * 4 : 0.6 + Math.random() * 1, vx: big ? 1 + Math.random() * 3 : 0, ph: Math.random() * 6.28, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * (big ? 0.15 : 0.05), c: PAL[m][Math.floor(Math.random() * PAL[m].length)], m, al: 0.9, big });
-  function burst(m) { if (reduce) return; for (let i = 0; i < 46; i++) { const p = mk(m, true); p.x = Math.random() * innerWidth * 1.1 - innerWidth * 0.3; p.y = -40 - Math.random() * innerHeight * 0.5; parts.push(p); } }
+  function burst(m, count = 46) { if (reduce) return; for (let i = 0; i < count; i++) { const p = mk(m, true); p.x = Math.random() * innerWidth * 1.1 - innerWidth * 0.3; p.y = -40 - Math.random() * innerHeight * 0.5; parts.push(p); } }
   function loop() {
     const m = current ? current.dataset.petals : "";
-    if (m && parts.filter((p) => !p.big).length < (innerWidth < 600 ? 16 : 24) && Math.random() < 0.15) parts.push(mk(m, false));
+    if (m && parts.filter((p) => !p.big && !p.dust).length < (innerWidth < 600 ? 16 : 24) && Math.random() < 0.15) parts.push(mk(m, false));
+    if (current && parts.filter((p) => p.dust).length < (innerWidth < 600 ? 22 : 40) && Math.random() < 0.3) {
+      const g = PAL.gold; parts.push({ dust: true, x: Math.random() * innerWidth, y: innerHeight + 10, s: 1 + Math.random() * 2.2, vy: -(0.25 + Math.random() * 0.6), vx: 0, ph: Math.random() * 6.28, rot: 0, vr: 0, c: g[Math.floor(Math.random() * g.length)], al: 0, big: false, life: 0 });
+    }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, innerWidth, innerHeight);
     parts = parts.filter((p) => {
       p.y += p.vy; p.ph += 0.02; p.x += p.vx + Math.sin(p.ph) * 0.6; p.rot += p.vr;
+      if (p.dust) {
+        p.life++; p.al = Math.min(1, p.life / 60) * (0.45 + 0.45 * Math.sin(p.ph * 3));
+        if (p.y < -10) return false;
+        ctx.save(); ctx.globalAlpha = Math.max(0, p.al); ctx.fillStyle = p.c; ctx.shadowColor = p.c; ctx.shadowBlur = 6;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        return true;
+      }
       if (!p.big && p.m !== m) p.al -= 0.025;
       if (p.al <= 0 || p.y > innerHeight + 30) return false;
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.globalAlpha = p.al; ctx.fillStyle = p.c;
