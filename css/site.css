@@ -249,3 +249,51 @@ h1,h2,h3,p,figure,blockquote,ol{margin:0}
 /* paintings sit at the bottom at full width, so the sky above stays clear for the words */
 .paint{top:auto;bottom:0;height:auto;width:100%;object-fit:fill;transform-origin:50% 100%}
 .frame--invite .paint{height:auto}
+
+/* ================= Red and gold theme ================= */
+:root{
+  --red:#8e1a24; --red-deep:#5e0d16; --red-ink:#7d1520; --ink:#4a2a22; --soft:#7a5a4c; --maroon:#8e1a24;
+  --gold:#c9a052; --gold2:#e6c57c;
+  --jaali-gold:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23d9b26a' stroke-width='1.1' opacity='.38'%3E%3Cpath d='M60 6 C74 24 74 36 60 54 C46 36 46 24 60 6Z'/%3E%3Cpath d='M60 114 C74 96 74 84 60 66 C46 84 46 96 60 114Z'/%3E%3Cpath d='M6 60 C24 46 36 46 54 60 C36 74 24 74 6 60Z'/%3E%3Cpath d='M114 60 C96 46 84 46 66 60 C84 74 96 74 114 60Z'/%3E%3Ccircle cx='60' cy='60' r='5'/%3E%3Cpath d='M0 0 Q30 30 0 60 M120 0 Q90 30 120 60 M0 120 Q30 90 0 60 M120 120 Q90 90 120 60'/%3E%3C/g%3E%3Cg fill='%23d9b26a' opacity='.45'%3E%3Ccircle cx='0' cy='0' r='3'/%3E%3Ccircle cx='120' cy='0' r='3'/%3E%3Ccircle cx='0' cy='120' r='3'/%3E%3Ccircle cx='120' cy='120' r='3'/%3E%3Ccircle cx='60' cy='60' r='2'/%3E%3C/g%3E%3C/svg%3E");
+}
+body{background:radial-gradient(120% 70% at 50% 0%,#a3222d 0%,var(--red) 45%,var(--red-deep) 100%) fixed;color:var(--ink)}
+body::before{content:"";position:fixed;inset:0;background:var(--jaali-gold) 0 0/120px 120px;pointer-events:none;z-index:0}
+main{position:relative;z-index:1}
+.arch-gold{background:linear-gradient(180deg,#f1d68f,#c9a052 40%,#a77c35 75%,#d9b66c);inset:-5px -5px -5px;--cap:calc(56cqw + 6px)}
+.win{box-shadow:inset 0 0 0 1px rgba(142,26,36,.15)}
+.frame--plain .win{background:radial-gradient(100% 50% at 50% 15%,#fffaf1,transparent 70%),#f7efe2}
+.script,.frame--bairana .script,.frame--haldi .script,.frame--mehndi .script,.frame--reception .script,.frame--baraat .script,.frame--wedding .script{color:var(--red-ink)}
+.frame--bairana .ev-date,.frame--haldi .ev-date,.frame--mehndi .ev-date,.frame--reception .ev-date,.frame--baraat .ev-date,.frame--wedding .ev-date{color:var(--red-ink)}
+.kicker{color:#9a6f3a}
+.groups .kicker{color:var(--red)}
+.amp,.tag,.secret-btn{color:var(--gold)}
+.om,.shloka{color:var(--red-ink)}
+.shloka{border-color:var(--gold)}
+.btn{background:var(--red);border-color:var(--gold);color:#fff7e8;box-shadow:inset 0 0 0 2px rgba(230,197,124,.25)}
+.btn:hover{background:#a3222d}
+.btn--ghost{background:rgba(255,250,240,.9);color:var(--red);border-color:var(--red)}
+.links a{color:var(--red);border-bottom-color:rgba(142,26,36,.4)}
+.countdown div{background:#fffaf1;border-color:rgba(142,26,36,.35)}
+.countdown b{color:var(--red)}
+.miles li,.pin,.faq details,.bcard{border-color:rgba(142,26,36,.22)}
+.miles b,.pin h3,.faq summary{color:var(--red)}
+.tip{background:#f8e3dc;border-left:3px solid var(--red)}
+.tip b{color:var(--red)}
+.photo{border-color:var(--gold)}
+.dots i.on{background:var(--red)}
+/* opening card: red velvet with gold */
+.gate__card{background:radial-gradient(120% 80% at 50% 10%,#a3222d,var(--red) 55%,var(--red-deep));color:#fbefd9;box-shadow:0 0 0 2px var(--gold),0 0 0 7px rgba(142,26,36,.55),0 0 0 8.5px var(--gold2),0 28px 60px -20px rgba(40,5,8,.7)}
+.gate__card::before{content:"";position:absolute;inset:8px;border-radius:190px 190px 12px 12px;border:1px solid rgba(230,197,124,.55);pointer-events:none}
+.gate__card{position:relative}
+.gate__kicker{color:var(--gold2)}
+.gate__names{color:#fbefd9}
+.gate__names i{color:var(--gold2)}
+.gate__hint{background:var(--gold);color:var(--red-deep);font-weight:600}
+/* chrome */
+.dock__btn{width:44px;height:44px;background:var(--red);color:var(--gold2);border-color:var(--gold)}
+.menu__panel{background:#fbf4e8;border-top:3px solid var(--gold)}
+.menu a{color:var(--red);border-color:rgba(142,26,36,.3)}
+.menu a.on{background:var(--red);color:#fff7e8}
+.sheet__panel h3,.secret__k{color:var(--red)}
+.progress{background:var(--gold2)}
+.foot{color:#fff7e8}
