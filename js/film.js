@@ -15,12 +15,12 @@
   const EASE = "cubic-bezier(.2,.7,.2,1)";
 
   /* Each painting's own sky colour, so the words sit on clean sky */
-  const SKY = { invite: "#fdf7ec", court: "#8ec8f9", savedate: "#56b7fb", bairana: "#dda5cc", mehndi: "#6eb5b7", haldi: "#2198fd", reception: "#4a5e9e", baraat: "#e698c0", wedding: "#329cfa", closing: "#f6ad82" };
+  const SKY = { invite: "#fcf0d6", court: "#8ec8f9", savedate: "#56b7fb", bairana: "#dda5cc", mehndi: "#6eb5b7", haldi: "#2198fd", reception: "#4a5e9e", baraat: "#e698c0", wedding: "#329cfa", closing: "#f6ad82" };
   const SHORT = { residence: "Teela Jamalpura, Bhopal", brideResidence: "Fefartal, Narmadapuram", resort: "Khajoori Sadak, Bhopal" };
 
   /* optional painted assets: used when present */
   const ASSET = {};
-  ["ornament.webp", "ganesha.png", "curtain.webp", "petal.webp", "feather.webp", "marigold.webp", "strand.png", "garland.png", "diya.png", "ladi.png", "lights.png", "rose.png"].forEach((f) => {
+  ["ornament.webp", "ganesha.png", "curtain.webp", "petal.webp", "feather.webp", "marigold.webp", "strand.png", "feather_wall.webp", "hand_left.webp", "hand_right.webp", "glass_left.webp", "glass_right.webp", "garland.png", "diya.png", "ladi.png", "lights.png", "rose.png"].forEach((f) => {
     const im = new Image(); im.onload = () => { ASSET[f] = im.src; if (f === "ornament.webp") stage.style.setProperty("--ornament", `url(${im.src})`); if ((f === "curtain.webp" && !ASSET["strand.png"]) || f === "strand.png") buildCurtain(); };
     im.src = "assets/" + f;
   });
@@ -221,7 +221,47 @@
     } });
     return { cover: wait(2050), done: wait(3400) };
   }
+  /* The video's signature move: a wall of painted peacock feathers sweeps in, two mehndi hands glide across it, then all of it slides away. */
+  async function featherHands(toScene) {
+    if (reduce || !ASSET["feather_wall.webp"]) return false;
+    const box = document.createElement("div"); box.className = "fh";
+    box.innerHTML = `<div class="fh__wall" style="background-image:url(${ASSET["feather_wall.webp"]})"></div>` +
+      (ASSET["hand_right.webp"] ? `<img class="fh__r" src="${ASSET["hand_right.webp"]}" alt="">` : "") +
+      (ASSET["hand_left.webp"] ? `<img class="fh__l" src="${ASSET["hand_left.webp"]}" alt="">` : "");
+    fx.appendChild(box);
+    box.animate([{ transform: "translate3d(100%,0,0)" }, { transform: "translate3d(0,0,0)" }], { duration: 850, easing: "cubic-bezier(.2,.7,.25,1)", fill: "forwards" });
+    const r = box.querySelector(".fh__r"), l = box.querySelector(".fh__l");
+    if (r) r.animate([{ transform: "translate3d(70%,0,0) rotate(-4deg)" }, { transform: "translate3d(0,0,0) rotate(0deg)" }], { duration: 2800, delay: 650, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" });
+    if (l) l.animate([{ transform: "translate3d(-70%,0,0) rotate(4deg)" }, { transform: "translate3d(0,0,0) rotate(0deg)" }], { duration: 2800, delay: 900, easing: "cubic-bezier(.22,.8,.3,1)", fill: "both" });
+    await wait(1000); setBg(toScene, true);
+    await wait(2900);
+    box.getAnimations().forEach((a) => a.commitStyles && a.commitStyles());
+    box.animate([{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(-105%,0,0)" }], { duration: 950, easing: "cubic-bezier(.55,0,.75,.3)", fill: "forwards" }).finished.then(() => box.remove());
+    await wait(700); return true;
+  }
+  /* Two hands raise glasses from the bottom corners and clink in the middle. */
+  async function glassesClink(toScene) {
+    if (reduce || !ASSET["glass_left.webp"] || !ASSET["glass_right.webp"]) return false;
+    const box = document.createElement("div"); box.className = "gl";
+    box.innerHTML = `<img class="gl__l" src="${ASSET["glass_left.webp"]}" alt=""><img class="gl__r" src="${ASSET["glass_right.webp"]}" alt="">`;
+    fx.appendChild(box);
+    const [l, r] = box.children;
+    l.animate([{ transform: "translate3d(-60%,70%,0) rotate(18deg)" }, { transform: "translate3d(0,0,0) rotate(0deg)" }], { duration: 1500, easing: "cubic-bezier(.2,.8,.3,1)", fill: "both" });
+    r.animate([{ transform: "translate3d(60%,70%,0) rotate(-18deg)" }, { transform: "translate3d(0,0,0) rotate(0deg)" }], { duration: 1500, delay: 120, easing: "cubic-bezier(.2,.8,.3,1)", fill: "both" });
+    await wait(1600);
+    // the clink: a small sparkle where the glasses meet
+    for (let i = 0; i < 18; i++) { const sp = document.createElement("span"); sp.className = "spark"; sp.style.left = "50%"; sp.style.top = "38%"; sp.style.background = "#fff2c4"; fx.appendChild(sp);
+      const a = (i / 18) * Math.PI * 2, rr = rnd(7, 13); sp.animate([{ transform: "translate(0,0) scale(1)", opacity: 1 }, { transform: `translate(${Math.cos(a) * rr}cqw,${Math.sin(a) * rr}cqw) scale(.3)`, opacity: 0 }], { duration: 900, easing: "cubic-bezier(.1,.7,.3,1)", fill: "forwards" }).finished.then(() => sp.remove()); }
+    await wait(700); setBg(toScene); bloom();
+    l.animate([{ opacity: 1 }, { opacity: 0, transform: "translate3d(-30%,40%,0) rotate(10deg)" }], { duration: 1000, easing: "ease-in", fill: "forwards" });
+    r.animate([{ opacity: 1 }, { opacity: 0, transform: "translate3d(30%,40%,0) rotate(-10deg)" }], { duration: 1000, easing: "ease-in", fill: "forwards" }).finished.then(() => box.remove());
+    await wait(900); return true;
+  }
   async function transition(kind, toScene) {
+    if (kind === "featherhands" && await featherHands(toScene)) return;
+    if (kind === "glasses" && await glassesClink(toScene)) return;
+    if (kind === "featherhands") kind = "feathers";
+    if (kind === "glasses") kind = "gold";
     const go = () => setBg(toScene, true);
     if (kind === "feathers" && ASSET["feather.webp"]) { const t = wall(ASSET["feather.webp"], { cell: 0.17, min: 1.1, max: 1.5, rot: 22, rowK: 1.55, tall: 2.3, ground: "#2f6b57", dur: 2800 }); await t.cover; go(); await wait(250); return; }
     if (kind === "marigold") { const t = wall(ASSET["marigold.webp"] || "scenes/marigold.png", { cell: 0.27, min: 1.15, max: 1.45, rot: 40, ground: "#e9871c", dur: 2600 }); await t.cover; go(); await wait(250); return; }
@@ -237,7 +277,7 @@
   const pSecond = sideId === "groom" ? W.parents.bride : W.parents.groom;
   const events = [...S.firstEvents, ...W.sharedEvents];
   const dates = [...new Set(events.map((e) => e.date))];
-  const TIN = { bairana: "diyas", mehndi: "diyas", haldi: "marigold", reception: "gold", baraat: "gold", wedding: "rose" };
+  const TIN = { bairana: "diyas", mehndi: "featherhands", haldi: "marigold", reception: "glasses", baraat: "gold", wedding: "rose" };
   const AMB = { bairana: ["diyas", true], mehndi: ["green", false], haldi: ["yellow", true], reception: ["glow", false], baraat: ["fireworks", false], wedding: ["red", true] };
 
   const SC = [];
@@ -265,7 +305,7 @@
   } });
   SC.push({ id: "date", dur: 9500, async run() {
     await clearText(600); setAmbient(null);
-    await transition("feathers", "savedate"); setAmbient("glow"); setDeco(null);
+    await transition("featherhands", "savedate"); setAmbient("glow"); setDeco(null);
     const els = lines([["t-k", "Save the date"], ["t-big", `${S.dateShort.replace(" January 2027", "")}<small>January 2027</small>`], ["t-caps", S.place], ["rule", ""], ["count", ""], ["t-it", W.hero.tagline]], "13%", "1.4cqw");
     countEl = els[4]; tick(); fit(); await play(els, 700);
   } });
