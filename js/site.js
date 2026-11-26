@@ -25,7 +25,7 @@
   const Lx = (cls, h, tag = "div") => `<${tag} class="ln ${cls}" style="--i:${n++}">${h}</${tag}>`;
 
   /* Each painting's own top colour, so the text sits on clean sky */
-  const SKY = { invite: "#fdf6de", court: "#fef8ec", bairana: "#fbf7e9", mehndi: "#fdfcf8", haldi: "#c7e9e0", reception: "#fdf3e3", baraat: "#fde6eb", wedding: "#fdfdfb", closing: "#fffaf0" };
+  const SKY = { invite: "#fdf6de", court: "#fef8ec", bairana: "#fefdf6", mehndi: "#fdfdfb", haldi: "#fefbf1", reception: "#fce9d1", baraat: "#fcdfe4", wedding: "#e3f4fb", closing: "#fefcf6" };
   const frame = (id, theme, inner, o = {}) => `
   <section class="frame frame--${theme}${o.img ? "" : " frame--plain"}" id="${id}" data-petals="${o.petals || ""}" data-burst="${o.burst || ""}">
     <div class="card">
@@ -182,7 +182,7 @@
   const frames = [...document.querySelectorAll(".frame")];
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const progress = document.getElementById("progress");
-  const menuLinks = [...document.querySelectorAll(".menu a")];
+  const menuLinks = [...document.querySelectorAll(".menu a:not(#waShare)")];
   let current = null;
   const io = new IntersectionObserver((es) => es.forEach((e) => {
     if (!e.isIntersecting || document.body.classList.contains("locked")) return;
