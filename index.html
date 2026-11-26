@@ -5,50 +5,65 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pankaj &amp; Muskan — Wedding</title>
 <meta name="description" content="Pankaj & Muskan invite you to their wedding celebrations in Bhopal, 21–23 January 2027.">
-<meta name="theme-color" content="#f5eee2">
-<meta property="og:title" content="Pankaj & Muskan — Wedding">
+<meta name="theme-color" content="#5e0d16">
+<meta property="og:title" content="Pankaj & Muskan — Wedding Invitation">
 <meta property="og:description" content="Together with their families, joyfully invite you to the wedding celebrations · 21–23 January 2027 · Bhopal">
 <meta property="og:image" content="scenes/invite.webp">
 <link rel="icon" id="fav" href="favicon-groom.svg">
 <link rel="preload" as="image" href="scenes/invite.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&family=Pinyon+Script&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/site.css?v=13">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Pinyon+Script&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/film.css?v=14">
 </head>
-<body class="locked">
+<body>
 
-<div id="gate" class="gate">
-  <button class="gate__card" id="gateBtn" type="button">
-    <span class="gate__kicker">You are invited</span>
-    <img class="gate__mono" src="brand/monogram-v2.png" alt="" width="813" height="729">
-    <span class="gate__names"><span data-first>Pankaj</span><i>&amp;</i><span data-second>Muskan</span></span>
-    <span class="gate__hint">Tap to open</span>
-  </button>
-</div>
+<div class="backdrop" aria-hidden="true"><img id="bd" src="scenes/invite.webp" alt=""></div>
 
-<canvas id="petals" aria-hidden="true"></canvas>
-<div class="progress" id="progress" aria-hidden="true"></div>
-
-<main id="main"></main>
-
-<div class="dock">
-  <button class="dock__btn" id="menuBtn" type="button" aria-label="Sections" aria-expanded="false" aria-controls="menu">
-    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M5 8h14M5 12h14M5 16h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-  </button>
-
-  <button class="dock__btn" id="music" type="button" aria-label="Mute music" aria-pressed="true">
-    <span class="bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
-  </button>
-</div>
-
-<nav class="menu" id="menu" hidden aria-label="Sections">
-  <div class="menu__panel">
-    <a href="#top">Invitation</a><a href="#events">Celebrations</a><a href="#family">Family</a><a href="#story">Our story</a>
-    <a href="#gallery">Moments</a><a href="#travel">Travel</a><a href="#faq">FAQ</a><a href="#blessings">Blessings</a>
-    <a id="waShare" class="menu__wa" href="#" target="_blank" rel="noopener">Share invite on WhatsApp</a>
+<main class="stage" id="stage" aria-label="Wedding invitation film">
+  <div class="win" id="win">
+    <img class="bg" id="bgA" src="scenes/invite.webp" alt="">
+    <img class="bg" id="bgB" alt="">
+    <div class="ambient" id="ambient" aria-hidden="true"></div>
+    <img class="garland" id="garland" src="assets/garland.png" alt="" aria-hidden="true">
+    <img class="mono" id="mono" src="brand/monogram-v2.png" alt="" width="813" height="729">
+    <div class="txt" id="txt" aria-live="polite"></div>
+    <div class="curtain" id="curtain" aria-hidden="true"></div>
   </div>
-</nav>
+  <svg class="rim" id="rim" aria-hidden="true"><path id="rimPath"/></svg>
+  <div class="fx" id="fx" aria-hidden="true"></div>
+
+  <div class="bars" id="bars" aria-hidden="true"></div>
+  <div class="hud">
+    <button type="button" class="hud__btn" id="muteBtn" aria-label="Mute music" aria-pressed="false">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path id="waves" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <button type="button" class="hud__btn" id="infoBtn" aria-label="Event details">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <button type="button" class="tap tap--prev" id="tapPrev" aria-label="Previous scene"></button>
+  <button type="button" class="tap tap--next" id="tapNext" aria-label="Next scene"></button>
+
+  <div class="endbar" id="endbar" hidden>
+    <button type="button" class="pill pill--red" id="detailsBtn">Event details</button>
+    <a class="pill" id="shareBtn" href="#" target="_blank" rel="noopener">Share invite</a>
+    <button type="button" class="pill" id="replayBtn">Replay</button>
+  </div>
+
+  <button type="button" class="gate" id="gate" aria-label="Open the invitation">
+    <span class="gate__card">
+      <span class="gate__k">You are invited</span>
+      <img src="brand/monogram-v2.png" alt="" width="813" height="729">
+      <span class="gate__n"><span data-first>Pankaj</span><i>&amp;</i><span data-second>Muskan</span></span>
+      <span class="gate__go">Tap to open</span>
+    </span>
+  </button>
+</main>
+
+<section class="details" id="details" hidden aria-label="Event details">
+  <div class="details__in" id="detailsIn"></div>
+</section>
 
 <div class="sheet" id="bsheet" hidden>
   <form class="sheet__panel" id="bform">
@@ -56,24 +71,16 @@
     <h3>Leave your blessing</h3>
     <label>Your name<input name="n" required maxlength="80" autocomplete="name"></label>
     <label>Message<textarea name="m" required maxlength="600" rows="4"></textarea></label>
-    <button class="btn" type="submit">Send blessing</button>
+    <button class="pill pill--red" type="submit">Send blessing</button>
     <p class="fine">Opens WhatsApp with your blessing, addressed to the family.</p>
   </form>
 </div>
 
-<div class="secret" id="secret" hidden>
-  <div class="secret__card"><p class="secret__k">A note just for you</p><p class="secret__msg"></p><p class="secret__x">Tap to close</p></div>
-</div>
+<div class="lightbox" id="lightbox" hidden><img alt=""></div>
 
-<div class="lightbox" id="lightbox" hidden>
-  <button class="lightbox__x" type="button" aria-label="Close">×</button>
-  <img alt="">
-</div>
+<audio id="song" src="audio/aaj-sajeya.mp3" preload="auto" loop></audio>
 
-<audio id="song" src="audio/aaj-sajeya.mp3" preload="none" loop></audio>
-
-<script src="js/data.js?v=13"></script>
-<script src="js/art.js?v=13"></script>
-<script src="js/site.js?v=13"></script>
+<script src="js/data.js?v=14"></script>
+<script src="js/film.js?v=14"></script>
 </body>
 </html>
