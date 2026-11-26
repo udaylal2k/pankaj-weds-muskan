@@ -208,12 +208,12 @@
     if (!e.isIntersecting || document.body.classList.contains("locked")) return;
     const f = e.target; current = f;
     f.classList.add("play");
-    if (f.dataset.burst && !f.dataset.burstDone) { f.dataset.burstDone = "1"; burst(f.dataset.burst); }
+    if (!f.dataset.fx) { f.dataset.fx = "1"; sceneFx(f); }
     const i = frames.indexOf(f);
     progress.style.setProperty("--p", ((i + 1) / frames.length).toFixed(3));
     let sOn = -1; sideLinks.forEach((a, k) => { const t = document.getElementById(a.dataset.f); if (t && frames.indexOf(t) <= i) sOn = k; });
     sideLinks.forEach((a, k) => a.classList.toggle("on", k === sOn));
-    if (f.dataset.petals && !f.dataset.sprinkled) { f.dataset.sprinkled = "1"; burst(f.dataset.petals, 18); }
+
     let on = -1; menuLinks.forEach((a, k) => { const t = document.querySelector(a.getAttribute("href")); if (t && frames.indexOf(t) <= i) on = k; });
     menuLinks.forEach((a, k) => a.classList.toggle("on", k === on));
   }), { threshold: 0.5 });
@@ -297,6 +297,31 @@
   size(); addEventListener("resize", size);
   const mk = (m, big) => ({ x: Math.random() * innerWidth, y: -20 - Math.random() * 60, s: (big ? 10 : 4) + Math.random() * (big ? 14 : 5), vy: big ? 3 + Math.random() * 4 : 0.6 + Math.random() * 1, vx: big ? 1 + Math.random() * 3 : 0, ph: Math.random() * 6.28, rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * (big ? 0.15 : 0.05), c: PAL[m][Math.floor(Math.random() * PAL[m].length)], m, al: 0.9, big });
   function burst(m, count = 46) { if (reduce) return; for (let i = 0; i < count; i++) { const p = mk(m, true); p.x = Math.random() * innerWidth * 1.1 - innerWidth * 0.3; p.y = -40 - Math.random() * innerHeight * 0.5; parts.push(p); } }
+  /* Scene changes like the video: something sweeps across the whole screen as each event arrives */
+  function sweepImage(src) {
+    if (reduce) return;
+    const d = document.createElement("div"); d.className = "sweep"; d.innerHTML = `<img src="${src}" alt="">`;
+    document.body.appendChild(d); setTimeout(() => d.remove(), 2200);
+  }
+  function blooms(n) {
+    if (reduce) return;
+    for (let i = 0; i < n; i++) parts.push({ bloom: true, x: innerWidth * (0.55 + Math.random() * 1.0), y: innerHeight * (0.55 + Math.random() * 1.0), s: 45 + Math.random() * 60, vx: -(4 + Math.random() * 3), vy: -(3.6 + Math.random() * 3), vr: (Math.random() - 0.5) * 0.06, rot: Math.random() * 6, al: 1, ph: 0, big: true, c: "" });
+  }
+  function sceneFx(f) {
+    const t = (f.className.match(/frame--(\w+)/) || [])[1];
+    if (t === "bairana" || t === "mehndi") sweepImage("scenes/feathers.webp");
+    else if (t === "haldi") { blooms(22); setTimeout(() => burst("yellow", 30), 500); }
+    else if (t === "reception") burst("gold", 70);
+    else if (t === "baraat") { blooms(14); burst("marigold", 30); }
+    else if (t === "wedding") { burst("pink", 90); setTimeout(() => burst("pink", 50), 400); }
+    else if (t === "end") burst("pink", 40);
+  }
+  function drawBloom(p) {
+    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    const rings = [["#e9761a", 1, 14], ["#f6a02c", 0.74, 12], ["#ffc04a", 0.48, 10]];
+    rings.forEach(([c, k, n]) => { ctx.fillStyle = c; for (let j = 0; j < n; j++) { ctx.save(); ctx.rotate((j / n) * Math.PI * 2 + k); ctx.beginPath(); ctx.ellipse(0, -p.s * k * 0.55, p.s * 0.16 * k + 3, p.s * k * 0.42, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore(); } });
+    ctx.fillStyle = "#b8501a"; ctx.beginPath(); ctx.arc(0, 0, p.s * 0.14, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  }
   function loop() {
     const m = current ? current.dataset.petals : "";
     if (m && parts.filter((p) => !p.big && !p.dust).length < (innerWidth < 600 ? 16 : 24) && Math.random() < 0.15) parts.push(mk(m, false));
@@ -305,6 +330,11 @@
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, innerWidth, innerHeight);
     parts = parts.filter((p) => {
+      if (p.bloom) {
+        p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        if (p.x < -150 || p.y < -150) return false;
+        drawBloom(p); return true;
+      }
       p.y += p.vy; p.ph += 0.02; p.x += p.vx + Math.sin(p.ph) * 0.6; p.rot += p.vr;
       if (p.dust) {
         p.life++; p.al = Math.min(1, p.life / 60) * (0.45 + 0.45 * Math.sin(p.ph * 3));
