@@ -20,8 +20,8 @@
 
   /* optional painted assets: used when present */
   const ASSET = {};
-  ["ornament.webp", "ganesha.png", "curtain.webp", "petal.png", "feather.png", "garland.png", "diya.png", "ladi.png", "lights.png", "rose.png"].forEach((f) => {
-    const im = new Image(); im.onload = () => { ASSET[f] = im.src; if (f === "ornament.webp") stage.style.setProperty("--ornament", `url(${im.src})`); if (f === "curtain.webp") $("curtain").classList.add("has-img"), $("curtain").style.backgroundImage = `url(${im.src})`; };
+  ["ornament.webp", "ganesha.png", "curtain.webp", "petal.webp", "feather.webp", "marigold.webp", "strand.png", "garland.png", "diya.png", "ladi.png", "lights.png", "rose.png"].forEach((f) => {
+    const im = new Image(); im.onload = () => { ASSET[f] = im.src; if (f === "ornament.webp") stage.style.setProperty("--ornament", `url(${im.src})`); if ((f === "curtain.webp" && !ASSET["strand.png"]) || f === "strand.png") buildCurtain(); };
     im.src = "assets/" + f;
   });
   stage.style.backgroundSize = "";
@@ -86,7 +86,7 @@
   function bloom() { // a warm wash of light at the moment of a cut
     if (reduce) return;
     const d = document.createElement("div"); d.className = "bloom"; fx.appendChild(d);
-    d.animate([{ opacity: 0 }, { opacity: 0.75, offset: 0.4 }, { opacity: 0 }], { duration: 1500, easing: "ease-in-out" }).finished.then(() => d.remove());
+    d.animate([{ opacity: 0 }, { opacity: 0.35, offset: 0.4 }, { opacity: 0 }], { duration: 1500, easing: "ease-in-out" }).finished.then(() => d.remove());
   }
   function setBg(name, instant) {
     win.style.setProperty("--sky", SKY[name] || "#f6e6cf");
@@ -100,14 +100,14 @@
       if (instant || reduce) { inn.style.opacity = 1; out.style.opacity = 0; drift(inn); }
       else {
         out.style.opacity = ""; inn.style.opacity = "";
-        out.animate([{ opacity: 1, transform: "scale(1.04)" }, { opacity: 0, transform: "scale(1.22)" }], { duration: 1500, easing: "cubic-bezier(.5,0,.3,1)", fill: "forwards" });
-        inn.animate([{ opacity: 0, transform: "scale(1.14)" }, { opacity: 1, transform: "scale(1)" }], { duration: 1700, easing: SOFT, fill: "forwards" }).finished.then(() => drift(inn)).catch(() => {});
+        out.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 1300, easing: "ease-in-out", fill: "forwards" });
+        inn.animate([{ opacity: 0, transform: "scale(1.025)" }, { opacity: 1, transform: "scale(1)" }], { duration: 1500, easing: "ease-out", fill: "forwards" }).finished.then(() => drift(inn)).catch(() => {});
       }
       [front, back] = [back, front];
     };
     back.complete && back.naturalWidth ? go() : (back.onload = () => { back.onload = null; go(); });
   }
-  function drift(el) { if (!reduce) el.animate([{ transform: "scale(1)" }, { transform: "scale(1.06) translateY(-0.6%)" }], { duration: 14000, easing: "ease-in-out", fill: "forwards" }); }
+  function drift(el) { if (!reduce) el.animate([{ transform: "scale(1)" }, { transform: "scale(1.03)" }], { duration: 16000, easing: "ease-in-out", fill: "forwards" }); }
 
   /* ---------- each scene's own decoration (or none) ---------- */
   const deco = $("garland"); let decoKind = null;
@@ -139,7 +139,7 @@
       if (kind === "fireworks") { firework(); ambTimer = setInterval(() => { if (!paused) firework(); }, 1500); }
       return;
     }
-    if (kind === "red" && ASSET["petal.png"]) { for (let i = 0; i < 12; i++) ambient.insertAdjacentHTML("beforeend", `<img src="${ASSET["petal.png"]}" alt="" style="left:${(i * 8.7 + 3) % 98}%;--s:${2.6 + (i % 3) * 0.9}cqw;--t:${8 + (i % 5)}s;--d:-${i * 0.9}s">`); return; }
+    if (kind === "red" && ASSET["petal.webp"]) { for (let i = 0; i < 12; i++) ambient.insertAdjacentHTML("beforeend", `<img src="${ASSET["petal.webp"]}" alt="" style="left:${(i * 8.7 + 3) % 98}%;--s:${2.6 + (i % 3) * 0.9}cqw;--t:${8 + (i % 5)}s;--d:-${i * 0.9}s">`); return; }
     const pal = PAL[kind];
     for (let i = 0; i < 12; i++) ambient.insertAdjacentHTML("beforeend", `<i style="left:${(i * 8.7 + 3) % 98}%;--s:${1.8 + (i % 3) * 0.7}cqw;--t:${8 + (i % 5)}s;--d:-${i * 0.9}s;--c:${pal[i % pal.length]}"></i>`);
   }
@@ -185,20 +185,47 @@
       im.animate([{ transform: "translate3d(0,0,0) scale(.85)", opacity: 0 }, { opacity: 1, offset: 0.2 }, { transform: `translate3d(${rnd(-6, 6)}cqw,-125cqh,0) scale(1.05)`, opacity: 0 }], { duration: rnd(3200, 4400), delay: rnd(0, 900), easing: "cubic-bezier(.3,.2,.5,1)", fill: "both" }).finished.then(() => im.remove());
     }
   }
-  const PETAL = () => ASSET["petal.png"] || null;
-  async function transition(kind, toScene) {
-    const swap = (ms) => setTimeout(() => { setBg(toScene); bloom(); }, ms);
-    if (kind === "diyas") { diyasRise(18); toCamera(dotEl(["#fff1c4", "#ffd78a"], 9, true), 26, 1.1); swap(700); return wait(1400); }
-    if (kind === "feathers") { if (ASSET["feather.png"]) toCamera(imgEl(ASSET["feather.png"], 22), 16, 1.2, [1600, 2400]); swap(800); return wait(1500); }
-    if (kind === "marigold") { toCamera(imgEl("scenes/marigold.png", 26), 26, 1.1); toCamera(dotEl(["#ffd23f", "#ffb000", "#ff9f1c"], 4), 40, 1.2); swap(750); return wait(1500); }
-    if (kind === "gold") { toCamera(dotEl(["#fff4cf", "#ffd88a", "#ffe9b0"], 14, true), 48, 1.2); swap(650); return wait(1400); }
-    if (kind === "baraat") { toCamera(imgEl("scenes/marigold.png", 20), 12, 1.1); toCamera(dotEl(["#ff9f1c", "#f26b1d", "#ffbf3f", "#c9234a"], 4.5), 50, 1.2); swap(700); return wait(1450); }
-    if (kind === "rose") {
-      if (ASSET["rose.png"]) toCamera(imgEl(ASSET["rose.png"], 24), 9, 1.1);
-      toCamera(PETAL() ? imgEl(PETAL(), 9) : dotEl(["#c9234a", "#a3132f", "#e9638e"], 6), 70, 1.25, [1500, 2500]);
-      swap(800); return wait(1600);
+  const PETAL = () => ASSET["petal.webp"] || null;
+  /* A wall of painted objects slides across the whole screen, right to left; the next scene waits behind it. */
+  function wall(src, o) {
+    if (reduce) return { cover: Promise.resolve(), done: Promise.resolve() };
+    const r = stage.getBoundingClientRect(), Wd = r.width, Ht = r.height;
+    const span = 1.7, w = document.createElement("div"); w.className = "wall";
+    Object.assign(w.style, { width: Wd * span + "px", background: o.ground || "transparent" });
+    const cell = Wd * o.cell, cols = Math.ceil((Wd * span) / cell) + 1, rows = Math.ceil(Ht / (cell * (o.rowK || 1))) + 1;
+    let k = 0;
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+      const im = document.createElement("img"); im.src = src; const sz = cell * rnd(o.min, o.max);
+      Object.assign(im.style, { width: sz + "px", left: x * cell + (y % 2 ? cell / 2 : 0) - sz / 2 + rnd(-cell * 0.12, cell * 0.12) + "px", top: y * cell * (o.rowK || 1) - sz * (o.tall || 1) / 2 + rnd(-cell * 0.12, cell * 0.12) + "px", transform: `rotate(${rnd(-o.rot, o.rot)}deg)`, zIndex: (k++ % 7) });
+      w.appendChild(im);
     }
-    setBg(toScene); bloom(); return wait(500);
+    fx.appendChild(w);
+    const dur = o.dur || 2600;
+    const a = w.animate([{ transform: `translate3d(${Wd}px,0,0)` }, { transform: `translate3d(${-Wd * span}px,0,0)` }], { duration: dur, easing: "cubic-bezier(.42,0,.58,1)", fill: "forwards" });
+    a.finished.then(() => w.remove()).catch(() => w.remove());
+    return { cover: wait(dur * 0.5), done: wait(dur) };
+  }
+  /* Petals start falling, grow denser and bigger until they fill the screen, then fall away. */
+  function petalStorm(src) {
+    if (reduce) return { cover: Promise.resolve(), done: Promise.resolve() };
+    const waves = [[18, 4, 8, 0, 900], [22, 9, 16, 500, 1300], [16, 22, 40, 1000, 1500], [10, 55, 95, 1350, 1100]];
+    waves.forEach(([n, s0, s1, t0, spreadT]) => { for (let i = 0; i < n; i++) {
+      const im = document.createElement("img"); im.src = src; im.className = "storm"; const s = rnd(s0, s1);
+      Object.assign(im.style, { width: s + "cqw", left: rnd(-s * 0.6, 100 - s * 0.3) + "%", top: -s * 1.2 + "cqw" });
+      fx.appendChild(im);
+      const sway = rnd(-18, 18), rot = rnd(-180, 180), big = s > 40;
+      im.animate([{ transform: "translate3d(0,0,0) rotate(0deg)" }, { transform: `translate3d(${sway}cqw,${big ? 70 : 60}cqh,0) rotate(${rot / 2}deg)`, offset: 0.5 }, { transform: `translate3d(${-sway / 2}cqw,${big ? 175 : 135}cqh,0) rotate(${rot}deg)` }], { duration: big ? rnd(2000, 2500) : rnd(2400, 3400), delay: t0 + rnd(0, spreadT), easing: big ? "cubic-bezier(.4,.1,.6,.9)" : "linear", fill: "both" }).finished.then(() => im.remove());
+    } });
+    return { cover: wait(2050), done: wait(3400) };
+  }
+  async function transition(kind, toScene) {
+    const go = () => setBg(toScene, true);
+    if (kind === "feathers" && ASSET["feather.webp"]) { const t = wall(ASSET["feather.webp"], { cell: 0.17, min: 1.1, max: 1.5, rot: 22, rowK: 1.55, tall: 2.3, ground: "#2f6b57", dur: 2800 }); await t.cover; go(); await wait(250); return; }
+    if (kind === "marigold") { const t = wall(ASSET["marigold.webp"] || "scenes/marigold.png", { cell: 0.27, min: 1.15, max: 1.45, rot: 40, ground: "#e9871c", dur: 2600 }); await t.cover; go(); await wait(250); return; }
+    if (kind === "rose") { const t = petalStorm(ASSET["petal.webp"]); await t.cover; go(); await wait(700); return; }
+    if (kind === "diyas") { diyasRise(16); await wait(500); setBg(toScene); bloom(); await wait(900); return; }
+    if (kind === "gold") { bloom(); await wait(250); setBg(toScene); await wait(900); return; }
+    setBg(toScene); bloom(); await wait(800);
   }
 
   /* ---------- the scenes ---------- */
@@ -207,7 +234,7 @@
   const pSecond = sideId === "groom" ? W.parents.bride : W.parents.groom;
   const events = [...S.firstEvents, ...W.sharedEvents];
   const dates = [...new Set(events.map((e) => e.date))];
-  const TIN = { bairana: "diyas", mehndi: "feathers", haldi: "marigold", reception: "gold", baraat: "baraat", wedding: "rose" };
+  const TIN = { bairana: "diyas", mehndi: "diyas", haldi: "marigold", reception: "gold", baraat: "gold", wedding: "rose" };
   const AMB = { bairana: ["diyas", true], mehndi: ["green", false], haldi: ["yellow", true], reception: ["glow", false], baraat: ["fireworks", false], wedding: ["red", true] };
 
   const SC = [];
@@ -220,20 +247,22 @@
     setBg("invite"); await clearText(800);
     // the monogram arrives large in the middle, glows, then glides up to its place
     anim(mono, [{ opacity: 0, transform: "translateY(42cqh) scale(.3)", filter: "drop-shadow(0 0 0 rgba(255,215,130,0))" }, { opacity: 1, transform: "translateY(42cqh) scale(2.2)", filter: "drop-shadow(0 0 22px rgba(255,215,130,.95))", offset: 0.35 }, { opacity: 1, transform: "translateY(42cqh) scale(2.2)", filter: "drop-shadow(0 0 10px rgba(255,215,130,.6))", offset: 0.62 }, { opacity: 1, transform: "none", filter: "drop-shadow(0 6px 10px rgba(120,80,30,.2))" }], { duration: 3400, easing: "cubic-bezier(.6,0,.2,1)" });
-    await wait(1000); toCamera(dotEl(["#fff4cf", "#ffd88a"], 3, true), 22, 0.7, [1200, 1800]);
+
   } });
-  SC.push({ id: "invite", dur: 11000, async run() {
+  SC.push({ id: "invite", dur: 7000, async run() {
     setBg("invite"); anim(mono, [{ opacity: 1, transform: "none" }], { duration: 10 });
-    const els = lines([
-      ["t-title", S.family], ["t-it", "cordially invite you to celebrate<br>the union of"],
-      ["t-name", pFirst.name], ["t-sm", pFirst.line], ["t-amp", "&amp;"], ["t-name", pSecond.name], ["t-sm", pSecond.line],
-      ["t-it", "Join us as they begin their forever"]], "22%", ".5cqw");
-    fit(); await play(els, 820);
+    const els = lines([["t-title", S.family], ["rule", ""], ["t-it", "cordially invite you<br>to celebrate the union of"]], "23%", "1.4cqw");
+    fit(); await play(els, 900);
+  } });
+  SC.push({ id: "couple", dur: 10000, async run() {
+    await clearText(700); anim(mono, [{ opacity: 1 }, { opacity: 0 }], { duration: 700 });
+    setBg("court"); bloom(); setAmbient("glow");
+    const els = lines([["t-name", pFirst.name], ["t-sm", pFirst.line], ["t-amp", "&amp;"], ["t-name", pSecond.name], ["t-sm", pSecond.line], ["rule", ""], ["t-it", "Join us as they begin their forever"]], "14%", ".9cqw");
+    fit(); await play(els, 850);
   } });
   SC.push({ id: "date", dur: 9500, async run() {
-    await clearText(600); anim(mono, [{ opacity: 1 }, { opacity: 0 }], { duration: 600 });
-    setAmbient(null);
-    await featherZoom(); setBg("savedate", true); setAmbient("glow"); setDeco(null);
+    await clearText(600); setAmbient(null);
+    await transition("feathers", "savedate"); setAmbient("glow"); setDeco(null);
     const els = lines([["t-k", "Save the date"], ["t-big", `${S.dateShort.replace(" January 2027", "")}<small>January 2027</small>`], ["t-caps", S.place], ["rule", ""], ["count", ""], ["t-it", W.hero.tagline]], "13%", "1.4cqw");
     countEl = els[4]; tick(); fit(); await play(els, 700);
   } });
@@ -257,7 +286,7 @@
   });
   SC.push({ id: "end", dur: 0, async run() {
     await clearText(600); setDeco(null); setAmbient(null);
-    await transition("rose", "closing"); setAmbient("red", true);
+    await transition("soft", "closing"); setAmbient("red", true);
     const els = lines([["t-k", "Join us in celebrating"], ["t-title", `${S.first} <span style="font-size:.6em;color:#c9a052">&amp;</span> ${S.second}`], ["t-it", "as we begin our forever"], ["rule", ""], ["t-caps", S.dateShort], ["t-sm", "Your presence and blessings mean the world to us."], ["t-tag", S.hashtag]], "13%", "1cqw");
     fit(); await play(els, 700); await wait(700);
     $("endbar").hidden = false; anim($("endbar"), [{ opacity: 0, transform: "translateY(3cqw)" }, { opacity: 1, transform: "none" }], { duration: 1000, easing: SOFT });
@@ -289,7 +318,7 @@
     i = Math.max(0, Math.min(SC.length - 1, i));
     // land on a scene cleanly: set its look at once, then play it
     txt.innerHTML = ""; fx.innerHTML = "";
-    if (i <= 2) setBg("invite", true);
+    if (i <= 2) setBg("invite", true); if (i === 3) setBg("court", true);
     if (i <= 3) setDeco(null);
     if (i === 2) anim(mono, [{ opacity: 1, transform: "none" }], { duration: 10 }); else if (i !== 1) anim(mono, [{ opacity: 0 }], { duration: 10 });
     run(i);
@@ -309,15 +338,31 @@
   }
   setInterval(tick, 1000);
 
-  /* ---------- opening: the flower curtain lifts, the music starts ---------- */
-  let cs = ""; for (let i = 0; i < 15; i++) cs += `<span style="--d:${(i % 4) * 0.3}s;--c1:${i % 2 ? "#f6c7d6" : "#e9799f"}"></span>`;
-  $("curtain").innerHTML = cs;
+  /* ---------- opening: a curtain of hanging flower strands, swaying; on tap they rise one by one ---------- */
+  function buildCurtain() {
+    if (started) return;
+    const c = $("curtain"); c.classList.add("has-img"); c.innerHTML = "";
+    const strand = ASSET["strand.png"], N = strand ? 10 : 13;
+    for (let i = 0; i < N; i++) {
+      const d = document.createElement("div"); d.className = "strand";
+      const drop = (i * 37) % 11; // a little variety in length
+      d.style.left = (i / (N - 1)) * 100 + "%"; d.style.setProperty("--d", -(i * 0.7) + "s"); d.style.setProperty("--t", 4.5 + (i % 4) * 0.6 + "s"); d.style.top = -drop + "%";
+      if (strand) { d.innerHTML = `<img src="${strand}" alt="">`; d.classList.add("strand--img"); }
+      else { d.style.backgroundImage = `url(${ASSET["curtain.webp"]})`; d.style.backgroundSize = `${N * 100}% 100%`; d.style.backgroundPosition = `${(i / (N - 1)) * 100}% 0`; }
+      c.appendChild(d);
+    }
+  }
+  function liftCurtain() {
+    const ss = [...$("curtain").children], mid = (ss.length - 1) / 2;
+    if (!ss.length || reduce) { $("curtain").style.opacity = 0; return; }
+    ss.forEach((d, i) => d.animate([{ transform: "translate3d(0,0,0)" }, { transform: "translate3d(0,-118%,0)" }], { duration: 1700, delay: Math.abs(i - mid) * 110, easing: "cubic-bezier(.65,0,.3,1)", fill: "forwards" }));
+  }
   const song = $("song"); let muted = false, started = false;
   $("gate").addEventListener("click", () => {
     if (started) return; started = true;
     $("gate").classList.add("open"); setTimeout(() => $("gate").remove(), 1000);
     song.volume = 0.7; song.play().catch(() => {});
-    anim($("curtain"), [{ transform: "translateY(0)" }, { transform: "translateY(-105%)" }], { duration: 2400, easing: "cubic-bezier(.7,0,.25,1)" });
+    liftCurtain();
     stage.classList.add("playing");
     setTimeout(() => run(0), 900);
   });
