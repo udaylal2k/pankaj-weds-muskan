@@ -407,3 +407,17 @@ main{position:relative;z-index:1}
 .venue{font-size:max(12.5px,3.3cqw)}
 .venue b{font-size:max(13px,3.6cqw)}
 .links{font-size:max(10px,2.6cqw);opacity:.85;margin-top:.5cqw}
+
+/* ===== The video's pacing: lines arrive one at a time, slowly ===== */
+.ln{transition-duration:1.2s;transition-delay:calc(min(var(--i),12) * 420ms + 350ms)}
+.script.ln{transition-duration:2.2s;transition-delay:calc(min(var(--i),12) * 420ms + 350ms)}
+.frame--date .ln{transition-delay:calc(min(var(--i),12) * 380ms + 1.4s)}
+/* the monogram appears large in the middle, then glides up to its place */
+.frame--invite.play .mono.ln{animation:monoIntro 2.8s cubic-bezier(.6,0,.2,1) both,glow 3.6s ease-in-out 3s infinite;transition:none;opacity:1}
+@keyframes monoIntro{0%{opacity:0;transform:translateY(95cqw) scale(.4)}30%{opacity:1;transform:translateY(95cqw) scale(2.3)}62%{opacity:1;transform:translateY(95cqw) scale(2.3)}100%{opacity:1;transform:none}}
+.frame--invite .ln:not(.mono){transition-delay:calc(min(var(--i),12) * 420ms + 2.4s)}
+/* full-screen sweep between scenes */
+.sweep{position:fixed;inset:0;z-index:45;pointer-events:none;overflow:hidden}
+.sweep img{position:absolute;width:170vmax;height:170vmax;left:50%;top:50%;object-fit:cover;object-position:50% 45%;animation:sweepBy 1.9s cubic-bezier(.55,.05,.35,1) forwards}
+@keyframes sweepBy{0%{transform:translate(10%,20%) rotate(-12deg) scale(.9);opacity:0}18%{opacity:1}50%{transform:translate(-50%,-50%) rotate(0) scale(1.05);opacity:1}100%{transform:translate(-115%,-120%) rotate(10deg) scale(1.1);opacity:1}}
+@media (prefers-reduced-motion:reduce){.frame--invite.play .mono.ln{animation:none}}
