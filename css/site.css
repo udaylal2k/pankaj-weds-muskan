@@ -387,3 +387,23 @@ main{position:relative;z-index:1}
   background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55  0 0 0 0 .45  0 0 0 0 .35  0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") 0 0/240px 240px}
 .win::before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;box-shadow:inset 0 0 60px rgba(120,60,30,.18)}
 .paint{filter:saturate(.9) contrast(.97) sepia(.06)}
+
+/* ===== Video-card look: every screen is one card, the arch set in an ivory printed jaali border ===== */
+:root{--mat:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%239fae9c' stroke-width='1.2' stroke-linecap='round'%3E%3Cpath d='M48 14c-9 9-9 19 0 26 9-7 9-17 0-26z'/%3E%3Cpath d='M48 82c-9-9-9-19 0-26 9 7 9 17 0 26z'/%3E%3Cpath d='M14 48c9-9 19-9 26 0-7 9-17 9-26 0z'/%3E%3Cpath d='M82 48c-9-9-19-9-26 0 7 9 17 9 26 0z'/%3E%3Cpath d='M0 0c14 6 18 18 10 26M96 0c-14 6-18 18-10 26M0 96c14-6 18-18 10-26M96 96c-14-6-18-18-10-26'/%3E%3C/g%3E%3Cg fill='%23e9bdb3'%3E%3Ccircle cx='48' cy='48' r='5'/%3E%3Ccircle cx='0' cy='0' r='4'/%3E%3Ccircle cx='96' cy='0' r='4'/%3E%3Ccircle cx='0' cy='96' r='4'/%3E%3Ccircle cx='96' cy='96' r='4'/%3E%3C/g%3E%3Cg fill='%23c97a72'%3E%3Ccircle cx='48' cy='48' r='2'/%3E%3C/g%3E%3C/svg%3E")}
+.frame{padding:0}
+.card{padding:12px 12px 12px;background:var(--mat) center/64px 64px,#f8f1e4;box-shadow:inset 0 0 0 1px rgba(201,160,82,.55),inset 0 0 0 5px #f8f1e4,inset 0 0 0 6px rgba(201,160,82,.35)}
+.card{--cap:calc(56cqw - 13px)}
+.arch-gold{inset:7px 7px 7px;--cap:calc(56cqw - 8px)}
+.win{border-radius:0 0 4px 4px}
+@media (min-width:1024px){
+  .frame{padding:14px 26px}
+  .card{border-radius:6px;box-shadow:inset 0 0 0 1px rgba(201,160,82,.55),inset 0 0 0 5px #f8f1e4,inset 0 0 0 6px rgba(201,160,82,.35),0 30px 60px -30px rgba(30,0,5,.7)}
+}
+/* calmer, smaller words like a printed card */
+.ev-title{font-size:14.5cqw}
+.blurb{font-size:max(13.5px,3.6cqw)}
+.ev-date{font-size:max(11.5px,3.1cqw)}
+.ev-time{font-size:max(12.5px,3.4cqw)}
+.venue{font-size:max(12.5px,3.3cqw)}
+.venue b{font-size:max(13px,3.6cqw)}
+.links{font-size:max(10px,2.6cqw);opacity:.85;margin-top:.5cqw}
