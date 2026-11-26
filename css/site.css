@@ -8,7 +8,7 @@
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;scroll-snap-type:y mandatory}
-body{margin:0;background:linear-gradient(rgba(246,239,227,.45),rgba(246,239,227,.45)),var(--jaali) 0 0/150px 150px,var(--ivory);color:var(--ink);font-family:var(--serif);line-height:1.5;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:linear-gradient(rgba(246,239,227,.72),rgba(246,239,227,.72)),var(--jaali) 0 0/150px 150px,var(--ivory);color:var(--ink);font-family:var(--serif);line-height:1.5;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
 body.locked{overflow:hidden;height:100svh}
 img{max-width:100%;height:auto;display:block}
 a{color:inherit}
@@ -26,7 +26,7 @@ h1,h2,h3,p,figure,blockquote,ol{margin:0}
 .play .paint{transform:scale(1)}
 .content{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;text-align:center;padding:22cqw 9cqw 0;gap:1.4cqw}
 .content--list{padding:24cqw 7cqw 22cqw;gap:2cqw}
-.frame:not(.frame--plain) .content :is(p,h1,h2,.ln){text-shadow:0 0 10px var(--sky),0 0 4px var(--sky),0 0 1px var(--sky)}
+.frame:not(.frame--plain) .content :is(p,h1,h2,.ln){text-shadow:0 0 8px var(--sky),0 0 2px var(--sky)}
 
 /* ---------- Type ---------- */
 .kicker{font-family:var(--caps);font-size:max(10.5px,2.9cqw);letter-spacing:.26em;text-transform:uppercase;color:var(--soft)}
@@ -243,3 +243,9 @@ h1,h2,h3,p,figure,blockquote,ol{margin:0}
 .frame--invite .paint{top:auto;bottom:0;height:84%}
 .brail{align-items:center}
 .bcard{max-height:118cqw;overflow:auto}
+
+.menu__wa{grid-column:1/-1;background:#25d366!important;color:#fff!important;border-color:#25d366!important}
+.dock__btn{width:40px;height:40px;background:rgba(250,245,236,.75)}
+/* paintings sit at the bottom at full width, so the sky above stays clear for the words */
+.paint{top:auto;bottom:0;height:auto;width:100%;object-fit:fill;transform-origin:50% 100%}
+.frame--invite .paint{height:auto}
