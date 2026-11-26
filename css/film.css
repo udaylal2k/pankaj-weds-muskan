@@ -242,3 +242,19 @@ img{height:auto}
 .win{background:var(--sky,#f6e6cf)}
 .bg{top:auto;bottom:0;height:auto;min-height:0;object-fit:contain;object-position:50% 100%;transform-origin:50% 100%;
   -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 7%);mask-image:linear-gradient(to bottom,transparent 0,#000 7%)}
+/* feather wall with mehndi hands */
+.fh{position:absolute;inset:0;will-change:transform}
+.fh__wall{position:absolute;inset:0;background-size:auto 100%;background-position:30% 50%;background-color:#3b6b5a}
+.fh__r,.fh__l{position:absolute;width:150%;max-width:none;height:auto;will-change:transform}
+.fh__r{right:-28%;top:30%}
+.fh__l{left:-34%;top:48%}
+/* glasses clink */
+.gl{position:absolute;inset:0}
+.gl__l,.gl__r{position:absolute;width:105%;max-width:none;height:auto;top:22%;will-change:transform,opacity}
+.gl__l{left:-52%}
+.gl__r{right:-52%}
+.fh__r{width:112%;right:-22%;top:27%}
+.fh__l{width:104%;left:-46%;top:52%}
+.gl__l{width:64%;left:-10%;top:30%}
+.gl__r{width:74%;right:-12%;left:auto;top:30%}
+.fh__l{left:-24%}
