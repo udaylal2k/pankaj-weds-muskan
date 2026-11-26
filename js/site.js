@@ -25,13 +25,13 @@
   const Lx = (cls, h, tag = "div") => `<${tag} class="ln ${cls}" style="--i:${n++}">${h}</${tag}>`;
 
   /* Each painting's own top colour, so the text sits on clean sky */
-  const SKY = { invite: "#f8ecd5", court: "#faf1de", bairana: "#fae0c9", mehndi: "#fcfaed", haldi: "#fefbf1", reception: "#f6e6cf", baraat: "#fcdfe4", wedding: "#fab894", closing: "#fefcf6" };
+  const SKY = { invite: "#f8ecd5", court: "#faf1de", bairana: "#fcb48f", mehndi: "#fcfaed", haldi: "#fdda7f", reception: "#f6e6cf", baraat: "#fcb28c", wedding: "#fab894", closing: "#fcb48d" };
   const frame = (id, theme, inner, o = {}) => `
   <section class="frame frame--${theme}${o.img ? "" : " frame--plain"}" id="${id}" data-petals="${o.petals || ""}" data-burst="${o.burst || ""}">
     <div class="card">
       <div class="arch-gold" aria-hidden="true"></div>
       <div class="win" style="--sky:${SKY[o.img] || "#f4ede1"}">
-        ${o.img ? `<img class="paint" src="scenes/${o.img}.webp" alt="" aria-hidden="true" width="768" height="1344"${o.eager ? "" : ' loading="lazy"'}>` : ""}
+        ${o.img ? `<div class="paintbox"><img class="paint" src="scenes/${o.img}.webp" alt="" aria-hidden="true" width="768" height="1344"${o.eager ? "" : ' loading="lazy"'}></div>` : ""}
         ${o.img ? '<div class="clouds" aria-hidden="true"><i></i><i></i><i></i></div>' : ""}
         ${o.deco || ""}
         <div class="content${o.top ? " content--" + o.top : ""}">${inner}</div>
